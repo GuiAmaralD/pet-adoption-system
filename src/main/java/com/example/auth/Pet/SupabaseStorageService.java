@@ -38,7 +38,7 @@ public class SupabaseStorageService {
                 throw new RuntimeException("Failed to upload file: " + responseCode);
             }
 
-            return supabaseUrl + "/storage/v1/object/public" + bucket + "/" + filePath;
+            return supabaseUrl + "/storage/v1/object/public/" + bucket + "/" + filePath;
 
         } catch (Exception e) {
             throw new RuntimeException("Error uploading to Supabase", e);

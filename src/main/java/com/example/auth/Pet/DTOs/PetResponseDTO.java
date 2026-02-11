@@ -16,5 +16,5 @@ public record PetResponseDTO(
         Specie specie,
         String description,
         User user,
-        List<String> imagePaths
+        List<String> imageUrls
 ){}

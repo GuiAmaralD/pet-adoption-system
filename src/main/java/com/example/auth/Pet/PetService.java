@@ -46,15 +46,16 @@ public class PetService {
         this.supabaseStorageService = supabaseStorageService;
     }
 
-    public List<Pet> findAllByAdoptedFalse(){
-        List<Pet> pets = petRepository.findAllByAdoptedFalse();
-        return pets;
-    }
 
-    public Pet findById(Long id){
+    public Pet findById(Long id) {
         return petRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                                "Pet with such Id not found"));
+                        "Pet with such Id not found"));
+    }
+
+    public List<Pet> findAllByAdoptedFalse() {
+        List<Pet> pets = petRepository.findAllByAdoptedFalse();
+        return pets;
     }
 
     public List<Pet> findPetsByCriteria(String specie, String sex, String size) {
@@ -85,7 +86,7 @@ public class PetService {
     }
 
     @Transactional
-    public Pet save(Pet pet){
+    public Pet save(Pet pet) {
         return petRepository.save(pet);
     }
 
@@ -100,7 +101,7 @@ public class PetService {
                 dto.specie(),
                 user);
 
-        if(petRepository.existsByUserAndNicknameAndSizeAndSpecieAndDescriptionAndSex(
+        if (petRepository.existsByUserAndNicknameAndSizeAndSpecieAndDescriptionAndSex(
                 user,
                 dto.nickname(),
                 dto.size(),
@@ -129,41 +130,45 @@ public class PetService {
 
     private List<String> processImages(List<MultipartFile> images) throws IOException {
         List<String> imageUrls = new ArrayList<>();
-        if (images != null) {
-            if (images.size() > 4)
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "each pet has a limit of 4 images");
 
-            Set<String> hashes = new HashSet<>();
-
-            for (MultipartFile image : images) {
-                if (image.getSize() > 10 * 1024 * 1024)
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "image file " + image.getOriginalFilename() + " is too big");
-
-                if (!ALLOWED_CONTENT_TYPES.contains(image.getContentType())) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Invalid file type: " + image.getOriginalFilename());
-                }
-
-                String hash = DigestUtils.md5DigestAsHex(image.getBytes());
-                if (!hashes.add(hash)) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "duplicate file detected: " + image.getOriginalFilename());
-                }
-
-                String url = supabaseStorageService.uploadFile("pet-images", image);
-                imageUrls.add(url);
-            }
+        if(images == null || images.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one image is required");
         }
+
+        if (images.size() > 4)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "each pet has a limit of 4 images");
+
+        Set<String> hashes = new HashSet<>();
+
+        for (MultipartFile image : images) {
+            if (image.getSize() > 10 * 1024 * 1024)
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "image file " + image.getOriginalFilename() + " is too big");
+
+            if (!ALLOWED_CONTENT_TYPES.contains(image.getContentType())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Invalid file type: " + image.getOriginalFilename());
+            }
+
+            String hash = DigestUtils.md5DigestAsHex(image.getBytes());
+            if (!hashes.add(hash)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "duplicate file detected: " + image.getOriginalFilename());
+            }
+
+            String url = supabaseStorageService.uploadFile("pet-images", image);
+            imageUrls.add(url);
+        }
+
         return imageUrls;
     }
 
-    public boolean isPetFromLoggedUser(Long id, Principal principal){
+    public boolean isPetFromLoggedUser(Long id, Principal principal) {
         User user = (User) userService.findByEmail(principal.getName());
 
         Pet pet = this.findById(id);
 
-        if(user.getRegisteredPets().contains(pet)){
+        if (user.getRegisteredPets().contains(pet)) {
             return true;
         }
         return false;
@@ -183,6 +188,4 @@ public class PetService {
                 pet.getImageUrls()
         );
     }
-
-
 }
