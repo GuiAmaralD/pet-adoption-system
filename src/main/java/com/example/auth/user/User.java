@@ -98,15 +98,6 @@ public class User implements Serializable, UserDetails {
         return registeredPets;
     }
 
-    public boolean isPetInUserListAlready(Pet pet){
-        for(Pet pets : registeredPets){
-            if(pet.equals(pets)){
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if(this.role == UserRole.ADMIN) return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_USER"));

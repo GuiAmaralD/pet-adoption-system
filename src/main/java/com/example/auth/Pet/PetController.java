@@ -25,12 +25,10 @@ public class PetController {
 
     private final PetService petService;
     private final UserService userService;
-    private final SupabaseStorageService supabaseStorageService;
 
-    public PetController(PetService petService, UserService userService, SupabaseStorageService supabaseStorageService) {
+    public PetController(PetService petService, UserService userService) {
         this.petService = petService;
         this.userService = userService;
-        this.supabaseStorageService = supabaseStorageService;
     }
 
     @GetMapping

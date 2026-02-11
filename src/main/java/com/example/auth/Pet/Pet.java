@@ -160,15 +160,14 @@ public class Pet implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Pet pet = (Pet) o;
-        return Objects.equals(nickname, pet.nickname) && Objects.equals(sex, pet.sex) && Objects.equals(description, pet.description) && Objects.equals(specie, pet.specie);
+        return Objects.equals(id, pet.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nickname, sex, description, specie);
+        return Objects.hashCode(id);
     }
 
     @Override

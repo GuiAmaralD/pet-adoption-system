@@ -100,6 +100,16 @@ public class PetService {
                 dto.specie(),
                 user);
 
+        if(petRepository.existsByUserAndNicknameAndSizeAndSpecieAndDescriptionAndSex(
+                user,
+                dto.nickname(),
+                dto.size(),
+                dto.specie(),
+                dto.description(),
+                dto.sex())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User already registered a pet with identical attributes");
+        }
+
         List<String> imageUrls = processImages(images);
         pet.setImageUrls(imageUrls);
 

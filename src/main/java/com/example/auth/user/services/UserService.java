@@ -27,7 +27,7 @@ public class UserService {
     public User findById(Integer id){
        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "User with such id not found"));
+                        "User not found"));
        return user;
     }
 
