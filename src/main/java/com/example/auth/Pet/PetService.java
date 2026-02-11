@@ -32,6 +32,14 @@ public class PetService {
     private final UserService userService;
     private final SupabaseStorageService supabaseStorageService;
 
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
+            "image/png",
+            "image/jpeg",
+            "image/jpg",
+            "image/gif"
+    );
+
+
     public PetService(PetRepository petRepository, UserService userService, SupabaseStorageService supabaseStorageService) {
         this.petRepository = petRepository;
         this.userService = userService;
@@ -121,6 +129,12 @@ public class PetService {
                 if (image.getSize() > 10 * 1024 * 1024)
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                             "image file " + image.getOriginalFilename() + " is too big");
+
+                if (!ALLOWED_CONTENT_TYPES.contains(image.getContentType())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Invalid file type: " + image.getOriginalFilename());
+                }
+
                 String hash = DigestUtils.md5DigestAsHex(image.getBytes());
                 if (!hashes.add(hash)) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

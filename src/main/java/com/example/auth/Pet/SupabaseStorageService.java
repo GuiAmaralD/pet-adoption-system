@@ -25,7 +25,7 @@ public class SupabaseStorageService {
 
             HttpURLConnection connection = (HttpURLConnection) new URL(uploadUrl).openConnection();
             connection.setDoOutput(true);
-            connection.setRequestMethod("PUT"); // pode ser PUT dependendo da lib
+            connection.setRequestMethod("PUT");
             connection.setRequestProperty("Authorization", "Bearer " + supabaseKey);
             connection.setRequestProperty("Content-Type", file.getContentType());
 
@@ -38,7 +38,7 @@ public class SupabaseStorageService {
                 throw new RuntimeException("Failed to upload file: " + responseCode);
             }
 
-            return supabaseUrl + "/storage/v1/object/public/" + bucket + "/" + filePath;
+            return supabaseUrl + "/storage/v1/object/public" + bucket + "/" + filePath;
 
         } catch (Exception e) {
             throw new RuntimeException("Error uploading to Supabase", e);

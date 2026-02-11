@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 
 public record RegisterPetDTO(
         @NotBlank(message = "nickname should not be blank")
-        @Size(max = 30, message="max length for nickname = 255")
+        @Size(max = 30, message="max length for nickname = 30")
         @Pattern(regexp = "^[a-zA-Z\\s]*$", message = "name should contain only letters")
         String nickname,
         Sex sex,
