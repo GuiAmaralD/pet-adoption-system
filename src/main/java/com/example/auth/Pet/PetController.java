@@ -3,6 +3,9 @@ package com.example.auth.Pet;
 
 import com.example.auth.Pet.DTOs.RegisterPetDTO;
 import com.example.auth.Pet.DTOs.PetResponseDTO;
+import com.example.auth.Pet.enums.Sex;
+import com.example.auth.Pet.enums.Size;
+import com.example.auth.Pet.enums.Specie;
 import com.example.auth.user.User;
 import com.example.auth.user.services.UserService;
 import jakarta.validation.Valid;
@@ -42,11 +45,12 @@ public class PetController {
     }
 
     @GetMapping("/filter")
-    public List<Pet> getPetsByCriteria(
-            @RequestParam(required = false) String specie,
-            @RequestParam(required = false) String sex,
-            @RequestParam(required = false) String size) {
-        return petService.findPetsByCriteria(specie, sex, size);
+    public List<PetResponseDTO> getPetsByCriteria(
+            @RequestParam(required = false) Specie specie,
+            @RequestParam(required = false) Sex sex,
+            @RequestParam(required = false) Size size
+    ) {
+        return petService.findByFilters(specie, sex, size);
     }
 
     @GetMapping("/{id}")

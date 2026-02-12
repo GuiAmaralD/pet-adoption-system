@@ -14,6 +14,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.example.auth.Pet.enums.Sex.MALE;
+import static com.example.auth.Pet.enums.Size.*;
+import static com.example.auth.Pet.enums.Specie.DOG;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -36,13 +43,12 @@ class PetServiceUnitTests {
 
     @Mock
     private PetRepository petRepository;
-
     @Mock
     private UserService userService;
-
     @Mock
     private SupabaseStorageService supabaseStorageService;
-
+    @Mock
+    private Principal principal;
     @InjectMocks
     private PetService petService;
 
@@ -60,21 +66,21 @@ class PetServiceUnitTests {
         mockPet = new Pet(
                 1L,
                 "Rex",
-                Sex.MALE,
+                MALE,
                 "Friendly dog",
-                Size.MEDIUM,
+                MEDIUM,
                 new Date(System.currentTimeMillis()),
                 false,
-                Specie.DOG,
+                DOG,
                 mockUser
         );
 
         registerPetDTO = new RegisterPetDTO(
                 "Rex",
-                Sex.MALE,
+                MALE,
                 "Friendly dog",
-                Specie.DOG,
-                Size.MEDIUM
+                DOG,
+                MEDIUM
         );
     }
 
@@ -161,9 +167,9 @@ class PetServiceUnitTests {
         assertNotNull(result);
         assertEquals(1L, result.id());
         assertEquals("Rex", result.nickname());
-        assertEquals(Sex.MALE, result.sex());
-        assertEquals(Size.MEDIUM, result.size());
-        assertEquals(Specie.DOG, result.specie());
+        assertEquals(MALE, result.sex());
+        assertEquals(MEDIUM, result.size());
+        assertEquals(DOG, result.specie());
         assertEquals("Friendly dog", result.description());
         assertEquals(mockUser, result.user());
         assertEquals(2, result.imageUrls().size());
@@ -185,7 +191,6 @@ class PetServiceUnitTests {
     @Test
     @DisplayName("isPetFromLoggedUser should return true when pet belongs to logged user")
     void isPetFromLoggedUser_shouldReturnTrue_whenPetBelongsToUser() {
-        Principal principal = mock(Principal.class);
         when(principal.getName()).thenReturn("user@test.com");
         when(userService.findByEmail("user@test.com")).thenReturn(mockUser);
         when(petRepository.findById(1L)).thenReturn(Optional.of(mockPet));
@@ -202,7 +207,6 @@ class PetServiceUnitTests {
     @Test
     @DisplayName("isPetFromLoggedUser should return false when pet does not belong to logged user")
     void isPetFromLoggedUser_shouldReturnFalse_whenPetDoesNotBelongToUser() {
-        Principal principal = mock(Principal.class);
         when(principal.getName()).thenReturn("user@test.com");
         when(userService.findByEmail("user@test.com")).thenReturn(mockUser);
         when(petRepository.findById(1L)).thenReturn(Optional.of(mockPet));
@@ -217,7 +221,6 @@ class PetServiceUnitTests {
     @Test
     @DisplayName("isPetFromLoggedUser should throw exception when pet does not exist")
     void isPetFromLoggedUser_shouldThrowException_whenPetDoesNotExist() {
-        Principal principal = mock(Principal.class);
         when(principal.getName()).thenReturn("user@test.com");
         when(userService.findByEmail("user@test.com")).thenReturn(mockUser);
         when(petRepository.findById(999L)).thenReturn(Optional.empty());
@@ -307,7 +310,7 @@ class PetServiceUnitTests {
     @DisplayName("registerNewPet should throw CONFLICT when duplicate pet exists")
     void registerNewPet_shouldThrowConflict_whenDuplicatePetExists() {
         when(petRepository.existsByUserAndNicknameAndSizeAndSpecieAndDescriptionAndSex(
-                mockUser, "Rex", Size.MEDIUM, Specie.DOG, "Friendly dog", Sex.MALE
+                mockUser, "Rex", MEDIUM, DOG, "Friendly dog", MALE
         )).thenReturn(true);
 
         ResponseStatusException exception = assertThrows(
@@ -450,6 +453,36 @@ class PetServiceUnitTests {
         verify(supabaseStorageService, times(4)).uploadFile(eq("pet-images"), any(MultipartFile.class));
     }
 
+    // ==================== findByFilter() TESTS ====================//
+
+    @Test
+    @DisplayName("findByFilters should return mapped DTOs filtered by specie, sex and size")
+    void findByFilters_shouldReturnMappedDTOs_whenFiltersAreApplied() {
+
+        Specie specie = DOG;
+        Sex sex = MALE;
+        Size size = BIG;
+
+        List<Pet> filteredPets = List.of(
+                createPet("Rex",  BIG, DOG, MALE),
+                createPet("Thor", BIG, DOG, MALE)
+        );
+
+        when(petRepository.findByFilters(specie, sex, size))
+                .thenReturn(filteredPets);
+
+        List<PetResponseDTO> result = petService.findByFilters(specie, sex, size);
+
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(2, result.size()),
+                () -> assertEquals("Rex", result.get(0).nickname()),
+                () -> assertEquals("Thor", result.get(1).nickname())
+        );
+
+        verify(petRepository).findByFilters(specie, sex, size);
+    }
+
     // ==================== HELPER METHODS ====================
 
     private MockMultipartFile createMockImage(String name, String contentType, int size) {
@@ -459,5 +492,14 @@ class PetServiceUnitTests {
                 contentType,
                 new byte[size]
         );
+    }
+
+    private Pet createPet(String nickname, Size size, Specie specie, Sex sex) {
+        Pet pet = new Pet();
+        pet.setNickname(nickname);
+        pet.setSize(size);
+        pet.setSpecie(specie);
+        pet.setSex(sex);
+        return pet;
     }
 }

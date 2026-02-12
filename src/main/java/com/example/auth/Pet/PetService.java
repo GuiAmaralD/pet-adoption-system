@@ -7,13 +7,10 @@ import com.example.auth.Pet.enums.Size;
 import com.example.auth.Pet.enums.Specie;
 import com.example.auth.user.User;
 import com.example.auth.user.services.UserService;
-import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -58,31 +55,11 @@ public class PetService {
         return pets;
     }
 
-    public List<Pet> findPetsByCriteria(String specie, String sex, String size) {
-        return petRepository.findAll((Specification<Pet>) (root, query, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
-
-            if (StringUtils.hasText(specie)) {
-                predicates.add(criteriaBuilder.equal(
-                        root.get("specie"),
-                        Specie.valueOf(specie.toUpperCase())
-                ));
-            }
-            if (StringUtils.hasText(sex)) {
-                predicates.add(criteriaBuilder.equal(
-                        root.get("sex"),
-                        Sex.valueOf(sex.toUpperCase())
-                ));
-            }
-            if (StringUtils.hasText(size)) {
-                predicates.add(criteriaBuilder.equal(
-                        root.get("size"),
-                        Size.valueOf(size.toUpperCase())
-                ));
-            }
-
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-        });
+    public List<PetResponseDTO> findByFilters(Specie specie, Sex sex, Size size) {
+        return petRepository.findByFilters(specie, sex, size)
+                .stream()
+                .map(this::toSendPetToClientDTO)
+                .toList();
     }
 
     @Transactional
