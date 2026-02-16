@@ -14,10 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +37,8 @@ import static org.mockito.Mockito.*;
 @DisplayName("Pet Service Unit Tests")
 class PetServiceUnitTests {
 
+    @Mock
+    private PetMapper petMapper;
     @Mock
     private PetRepository petRepository;
     @Mock
@@ -122,7 +120,7 @@ class PetServiceUnitTests {
         List<Pet> mockPets = List.of(mockPet, mockPet);
         when(petRepository.findAllByAdoptedFalse()).thenReturn(mockPets);
 
-        List<Pet> result = petService.findAllByAdoptedFalse();
+        List<PetResponseDTO> result = petService.findAllByAdoptedFalse();
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -134,7 +132,7 @@ class PetServiceUnitTests {
     void findAllByAdoptedFalse_shouldReturnEmptyList_whenNoPetsAvailable() {
         when(petRepository.findAllByAdoptedFalse()).thenReturn(List.of());
 
-        List<Pet> result = petService.findAllByAdoptedFalse();
+        List<PetResponseDTO> result = petService.findAllByAdoptedFalse();
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -162,7 +160,7 @@ class PetServiceUnitTests {
     void toSendPetToClientDTO_shouldConvertCorrectly() {
         mockPet.setImageUrls(List.of("url1.jpg", "url2.jpg"));
 
-        PetResponseDTO result = petService.toSendPetToClientDTO(mockPet);
+        PetResponseDTO result = petMapper.toDTO(mockPet);
 
         assertNotNull(result);
         assertEquals(1L, result.id());
@@ -180,7 +178,7 @@ class PetServiceUnitTests {
     void toSendPetToClientDTO_shouldHandlePetWithoutImages() {
         mockPet.setImageUrls(new ArrayList<>());
 
-        PetResponseDTO result = petService.toSendPetToClientDTO(mockPet);
+        PetResponseDTO result = petMapper.toDTO(mockPet);
 
         assertNotNull(result);
         assertTrue(result.imageUrls().isEmpty());

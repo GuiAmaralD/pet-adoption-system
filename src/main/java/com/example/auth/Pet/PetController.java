@@ -36,12 +36,9 @@ public class PetController {
 
     @GetMapping
     public ResponseEntity<List<PetResponseDTO>> findAllByAdoptedFalse() {
-        List<Pet> pets = petService.findAllByAdoptedFalse();
-        List<PetResponseDTO> dtos = pets.stream()
-                .map(petService::toSendPetToClientDTO)
-                .collect(Collectors.toList());
+        List<PetResponseDTO> pets = petService.findAllByAdoptedFalse();
 
-        return ResponseEntity.ok().body(dtos);
+        return ResponseEntity.ok().body(pets);
     }
 
     @GetMapping("/filter")
@@ -55,10 +52,9 @@ public class PetController {
 
     @GetMapping("/{id}")
     public ResponseEntity<PetResponseDTO> getPet(@PathVariable Long id) {
-        Pet pet = petService.findById(id);
+        PetResponseDTO pet = petService.findByIdAsDto(id);
 
-        PetResponseDTO dto = petService.toSendPetToClientDTO(pet);
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(pet);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

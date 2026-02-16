@@ -16,7 +16,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +26,7 @@ public class PetService {
 
     private final PetRepository petRepository;
     private final UserService userService;
+    private final PetMapper petMapper;
     private final SupabaseStorageService supabaseStorageService;
 
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
@@ -37,10 +37,11 @@ public class PetService {
     );
 
 
-    public PetService(PetRepository petRepository, UserService userService, SupabaseStorageService supabaseStorageService) {
+    public PetService(PetRepository petRepository, PetMapper petMapper, UserService userService, SupabaseStorageService supabaseStorageService) {
         this.petRepository = petRepository;
         this.userService = userService;
         this.supabaseStorageService = supabaseStorageService;
+        this.petMapper = petMapper;
     }
 
 
@@ -50,16 +51,19 @@ public class PetService {
                         "Pet with such Id not found"));
     }
 
-    public List<Pet> findAllByAdoptedFalse() {
+    public PetResponseDTO findByIdAsDto(Long id) {
+        return petMapper.toDTO(petRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Pet with such Id not found")));
+    }
+
+    public List<PetResponseDTO> findAllByAdoptedFalse() {
         List<Pet> pets = petRepository.findAllByAdoptedFalse();
-        return pets;
+        return petMapper.toDTOList(pets);
     }
 
     public List<PetResponseDTO> findByFilters(Specie specie, Sex sex, Size size) {
-        return petRepository.findByFilters(specie, sex, size)
-                .stream()
-                .map(this::toSendPetToClientDTO)
-                .toList();
+        return petMapper.toDTOList(petRepository.findByFilters(specie, sex, size));
     }
 
     @Transactional
@@ -68,15 +72,7 @@ public class PetService {
     }
 
     public PetResponseDTO registerNewPet(RegisterPetDTO dto, List<MultipartFile> images, User user) throws IOException {
-        Pet pet = new Pet(null,
-                dto.nickname(),
-                dto.sex(),
-                dto.description(),
-                dto.size(),
-                new Date(System.currentTimeMillis()),
-                false,
-                dto.specie(),
-                user);
+        Pet pet = petMapper.toEntity(dto, user);
 
         if (petRepository.existsByUserAndNicknameAndSizeAndSpecieAndDescriptionAndSex(
                 user,
@@ -93,16 +89,7 @@ public class PetService {
 
         petRepository.save(pet);
 
-        return new PetResponseDTO(
-                pet.getId(),
-                pet.getNickname(),
-                pet.getSex(),
-                pet.getSize(),
-                pet.getSpecie(),
-                pet.getDescription(),
-                pet.getUser(),
-                pet.getImageUrls()
-        );
+        return petMapper.toDTO(pet);
     }
 
     private List<String> processImages(List<MultipartFile> images) throws IOException {
@@ -145,24 +132,6 @@ public class PetService {
 
         Pet pet = this.findById(id);
 
-        if (user.getRegisteredPets().contains(pet)) {
-            return true;
-        }
-        return false;
-    }
-
-
-    public PetResponseDTO toSendPetToClientDTO(Pet pet) {
-
-        return new PetResponseDTO(
-                pet.getId(),
-                pet.getNickname(),
-                pet.getSex(),
-                pet.getSize(),
-                pet.getSpecie(),
-                pet.getDescription(),
-                pet.getUser(),
-                pet.getImageUrls()
-        );
+        return user.getRegisteredPets().contains(pet);
     }
 }
