@@ -25,6 +25,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.example.auth.Pet.enums.Sex.MALE;
 import static com.example.auth.Pet.enums.Size.*;
@@ -80,9 +81,52 @@ class PetServiceUnitTests {
                 DOG,
                 MEDIUM
         );
+
+        lenient().when(petMapper.toEntity(any(RegisterPetDTO.class), any(User.class))).thenAnswer(invocation -> {
+            RegisterPetDTO dto = invocation.getArgument(0);
+            User user = invocation.getArgument(1);
+            Pet pet = new Pet();
+            pet.setNickname(dto.nickname());
+            pet.setSex(dto.sex());
+            pet.setSize(dto.size());
+            pet.setSpecie(dto.specie());
+            pet.setDescription(dto.description());
+            pet.setUser(user);
+            return pet;
+        });
+
+        lenient().when(petMapper.toDTO(any(Pet.class))).thenAnswer(invocation -> {
+            Pet pet = invocation.getArgument(0);
+            return new PetResponseDTO(
+                    pet.getId(),
+                    pet.getNickname(),
+                    pet.getSex(),
+                    pet.getSize(),
+                    pet.getSpecie(),
+                    pet.getDescription(),
+                    pet.getUser(),
+                    pet.getImageUrls()
+            );
+        });
+
+        lenient().when(petMapper.toDTOList(anyList())).thenAnswer(invocation -> {
+            List<Pet> pets = invocation.getArgument(0);
+            return pets.stream()
+                    .map(pet -> new PetResponseDTO(
+                            pet.getId(),
+                            pet.getNickname(),
+                            pet.getSex(),
+                            pet.getSize(),
+                            pet.getSpecie(),
+                            pet.getDescription(),
+                            pet.getUser(),
+                            pet.getImageUrls()
+                    ))
+                    .collect(Collectors.toList());
+        });
     }
 
-    // ==================== findById() TESTS ====================
+    //findById method tests
 
     @Test
     @DisplayName("findById should return pet when ID exists")
@@ -105,6 +149,41 @@ class PetServiceUnitTests {
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
                 () -> petService.findById(999L)
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertTrue(exception.getReason().contains("Pet with such Id not found"));
+        verify(petRepository, times(1)).findById(999L);
+    }
+
+    // ==================== findByIdAsDto() TESTS ====================
+
+    @Test
+    @DisplayName("findByIdAsDto should return pet DTO when ID exists")
+    void findByIdAsDto_shouldReturnDto_whenIdExists() {
+        when(petRepository.findById(1L)).thenReturn(Optional.of(mockPet));
+
+        PetResponseDTO result = petService.findByIdAsDto(1L);
+
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(1L, result.id()),
+                () -> assertEquals("Rex", result.nickname()),
+                () -> assertEquals(MALE, result.sex()),
+                () -> assertEquals(MEDIUM, result.size()),
+                () -> assertEquals(DOG, result.specie())
+        );
+        verify(petRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    @DisplayName("findByIdAsDto should throw ResponseStatusException when ID does not exist")
+    void findByIdAsDto_shouldThrowException_whenIdDoesNotExist() {
+        when(petRepository.findById(999L)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> petService.findByIdAsDto(999L)
         );
 
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
@@ -153,38 +232,8 @@ class PetServiceUnitTests {
         verify(petRepository, times(1)).save(mockPet);
     }
 
-    // ==================== toSendPetToClientDTO() TESTS ====================
 
-    @Test
-    @DisplayName("toSendPetToClientDTO should convert Pet to PetResponseDTO correctly")
-    void toSendPetToClientDTO_shouldConvertCorrectly() {
-        mockPet.setImageUrls(List.of("url1.jpg", "url2.jpg"));
-
-        PetResponseDTO result = petMapper.toDTO(mockPet);
-
-        assertNotNull(result);
-        assertEquals(1L, result.id());
-        assertEquals("Rex", result.nickname());
-        assertEquals(MALE, result.sex());
-        assertEquals(MEDIUM, result.size());
-        assertEquals(DOG, result.specie());
-        assertEquals("Friendly dog", result.description());
-        assertEquals(mockUser, result.user());
-        assertEquals(2, result.imageUrls().size());
-    }
-
-    @Test
-    @DisplayName("toSendPetToClientDTO should handle pet without images")
-    void toSendPetToClientDTO_shouldHandlePetWithoutImages() {
-        mockPet.setImageUrls(new ArrayList<>());
-
-        PetResponseDTO result = petMapper.toDTO(mockPet);
-
-        assertNotNull(result);
-        assertTrue(result.imageUrls().isEmpty());
-    }
-
-    // ==================== isPetFromLoggedUser() TESTS ====================
+    //isPetFromLoggedUser method tests
 
     @Test
     @DisplayName("isPetFromLoggedUser should return true when pet belongs to logged user")
@@ -227,7 +276,7 @@ class PetServiceUnitTests {
                 () -> petService.isPetFromLoggedUser(999L, principal));
     }
 
-    // ==================== registerNewPet() SUCCESS TESTS ====================
+    //registerNewPet SUCCESS TESTS
 
     @Test
     @DisplayName("registerNewPet should throw BAD_REQUEST when no images provided")
@@ -302,7 +351,7 @@ class PetServiceUnitTests {
         verify(petRepository, times(1)).save(any(Pet.class));
     }
 
-    // ==================== registerNewPet() DUPLICATE VALIDATION ====================
+    //registerNewPet() DUPLICATE VALIDATION
 
     @Test
     @DisplayName("registerNewPet should throw CONFLICT when duplicate pet exists")
@@ -394,6 +443,31 @@ class PetServiceUnitTests {
     }
 
     @Test
+    @DisplayName("registerNewPet should propagate upload error and not save pet")
+    void registerNewPet_shouldPropagateUploadError_whenStorageFails() {
+        MockMultipartFile image = new MockMultipartFile(
+                "image",
+                "dog.jpg",
+                "image/jpeg",
+                "image content".getBytes()
+        );
+
+        when(petRepository.existsByUserAndNicknameAndSizeAndSpecieAndDescriptionAndSex(
+                any(), anyString(), any(), any(), anyString(), any()
+        )).thenReturn(false);
+        when(supabaseStorageService.uploadFile(eq("pet-images"), any(MultipartFile.class)))
+                .thenThrow(new RuntimeException("storage error"));
+
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> petService.registerNewPet(registerPetDTO, List.of(image), mockUser)
+        );
+
+        assertTrue(exception.getMessage().contains("storage error"));
+        verify(petRepository, never()).save(any(Pet.class));
+    }
+
+    @Test
     @DisplayName("registerNewPet should throw BAD_REQUEST when duplicate images detected")
     void registerNewPet_shouldThrowBadRequest_whenDuplicateImagesDetected() {
         byte[] sameContent = "identical image content".getBytes();
@@ -451,7 +525,7 @@ class PetServiceUnitTests {
         verify(supabaseStorageService, times(4)).uploadFile(eq("pet-images"), any(MultipartFile.class));
     }
 
-    // ==================== findByFilter() TESTS ====================//
+    //findByFilters() method tests
 
     @Test
     @DisplayName("findByFilters should return mapped DTOs filtered by specie, sex and size")
@@ -481,7 +555,24 @@ class PetServiceUnitTests {
         verify(petRepository).findByFilters(specie, sex, size);
     }
 
-    // ==================== HELPER METHODS ====================
+    @Test
+    @DisplayName("findByFilters should return empty list when no pets match filters")
+    void findByFilters_shouldReturnEmptyList_whenNoPetsMatch() {
+        Specie specie = DOG;
+        Sex sex = MALE;
+        Size size = BIG;
+
+        when(petRepository.findByFilters(specie, sex, size))
+                .thenReturn(List.of());
+
+        List<PetResponseDTO> result = petService.findByFilters(specie, sex, size);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(petRepository).findByFilters(specie, sex, size);
+    }
+
+   //helper methods
 
     private MockMultipartFile createMockImage(String name, String contentType, int size) {
         return new MockMultipartFile(
@@ -500,4 +591,6 @@ class PetServiceUnitTests {
         pet.setSex(sex);
         return pet;
     }
+
+
 }
