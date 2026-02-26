@@ -4,12 +4,19 @@ package com.example.auth.Pet;
 import com.example.auth.Pet.DTOs.PetResponseDTO;
 import com.example.auth.Pet.DTOs.RegisterPetDTO;
 import com.example.auth.user.User;
+import com.example.auth.user.UserMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 public class PetMapper {
+
+    private final UserMapper userMapper;
+
+    public PetMapper(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
 
     public Pet toEntity(RegisterPetDTO dto, User user) {
         Pet pet = new Pet();
@@ -30,7 +37,7 @@ public class PetMapper {
                 pet.getSize(),
                 pet.getSpecie(),
                 pet.getDescription(),
-                pet.getUser(),
+                pet.getUser() == null ? null : userMapper.toSummaryDTO(pet.getUser()),
                 pet.getImageUrls()
         );
     }
