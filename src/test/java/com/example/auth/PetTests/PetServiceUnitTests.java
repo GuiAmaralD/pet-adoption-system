@@ -6,6 +6,7 @@ import com.example.auth.Pet.enums.Sex;
 import com.example.auth.Pet.enums.Size;
 import com.example.auth.Pet.enums.Specie;
 import com.example.auth.user.User;
+import com.example.auth.user.UserMapper;
 import com.example.auth.user.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -54,6 +55,7 @@ class PetServiceUnitTests {
     private Pet mockPet;
     private User mockUser;
     private RegisterPetDTO registerPetDTO;
+    private final UserMapper userMapper = new UserMapper();
 
     @BeforeEach
     void setUp() {
@@ -104,7 +106,7 @@ class PetServiceUnitTests {
                     pet.getSize(),
                     pet.getSpecie(),
                     pet.getDescription(),
-                    pet.getUser(),
+                    pet.getUser() == null ? null : userMapper.toSummaryDTO(pet.getUser()),
                     pet.getImageUrls()
             );
         });
@@ -119,7 +121,7 @@ class PetServiceUnitTests {
                             pet.getSize(),
                             pet.getSpecie(),
                             pet.getDescription(),
-                            pet.getUser(),
+                            pet.getUser() == null ? null : userMapper.toSummaryDTO(pet.getUser()),
                             pet.getImageUrls()
                     ))
                     .collect(Collectors.toList());

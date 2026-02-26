@@ -6,6 +6,8 @@ import com.example.auth.Pet.enums.Sex;
 import com.example.auth.Pet.enums.Size;
 import com.example.auth.Pet.enums.Specie;
 import com.example.auth.user.User;
+import com.example.auth.user.UserMapper;
+import com.example.auth.user.DTOs.UserSummaryDTO;
 import com.example.auth.user.UserRole;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Pet Mapper Tests")
 class PetMapperTests {
 
-    private final PetMapper petMapper = new PetMapper();
+    private final UserMapper userMapper = new UserMapper();
+    private final PetMapper petMapper = new PetMapper(userMapper);
 
     @Test
     @DisplayName("toEntity should map RegisterPetDTO and user to Pet entity")
@@ -58,6 +61,7 @@ class PetMapperTests {
         pet.setImageUrls(List.of("img1.jpg", "img2.jpg"));
 
         PetResponseDTO result = petMapper.toDTO(pet);
+        UserSummaryDTO expectedUser = userMapper.toSummaryDTO(user);
 
         assertAll(
                 () -> assertEquals(10L, result.id()),
@@ -66,7 +70,7 @@ class PetMapperTests {
                 () -> assertEquals(Size.BIG, result.size()),
                 () -> assertEquals(Specie.DOG, result.specie()),
                 () -> assertEquals("Friendly dog", result.description()),
-                () -> assertEquals(user, result.user()),
+                () -> assertEquals(expectedUser, result.user()),
                 () -> assertEquals(List.of("img1.jpg", "img2.jpg"), result.imageUrls())
         );
     }
