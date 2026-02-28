@@ -173,6 +173,48 @@ class UserServiceUnitTests {
         assertEquals("encoded-new-password", captor.getValue().getPassword());
     }
 
+    @Test
+    @DisplayName("deleteAccount should delete user when password is correct")
+    void deleteAccount_shouldDeleteUser_whenPasswordIsCorrect() {
+        User user = user();
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("correct", user.getPassword())).thenReturn(true);
+
+        userService.deleteAccount(1, "correct");
+
+        verify(userRepository).delete(user);
+    }
+
+    @Test
+    @DisplayName("deleteAccount should throw CONFLICT when password is incorrect")
+    void deleteAccount_shouldThrowConflict_whenPasswordIsIncorrect() {
+        User user = user();
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("wrong", user.getPassword())).thenReturn(false);
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> userService.deleteAccount(1, "wrong")
+        );
+
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+        verify(userRepository, never()).delete(any(User.class));
+    }
+
+    @Test
+    @DisplayName("deleteAccount should throw NOT_FOUND when user does not exist")
+    void deleteAccount_shouldThrowNotFound_whenUserDoesNotExist() {
+        when(userRepository.findById(999)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> userService.deleteAccount(999, "any")
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        verify(userRepository, never()).delete(any(User.class));
+    }
+
     private User user() {
         return new User(1, "User", "user@test.com", "11999999999", "encoded-old", UserRole.USER);
     }

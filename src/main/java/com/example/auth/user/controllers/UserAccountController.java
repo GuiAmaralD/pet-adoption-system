@@ -2,6 +2,7 @@ package com.example.auth.user.controllers;
 
 
 import com.example.auth.user.DTOs.ChangePasswordDTO;
+import com.example.auth.user.DTOs.DeleteAccountDTO;
 import com.example.auth.user.DTOs.UpdateDTO;
 import com.example.auth.user.DTOs.UserResponseDTO;
 import com.example.auth.user.User;
@@ -10,6 +11,7 @@ import com.example.auth.user.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -57,5 +59,15 @@ public class UserAccountController {
         userService.updatePassword(id, dto.oldPassword(), dto.newPassword());
 
         return ResponseEntity.ok().body("Password updated.");
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAccount(@RequestBody @Valid DeleteAccountDTO dto, Principal principal) {
+        User user = (User) userService.findByEmail(principal.getName());
+        Integer id = user.getId();
+
+        userService.deleteAccount(id, dto.password());
+
+        return ResponseEntity.noContent().build();
     }
 }

@@ -129,9 +129,19 @@ public class PetService {
 
     public boolean isPetFromLoggedUser(Long id, Principal principal) {
         User user = (User) userService.findByEmail(principal.getName());
+        return petRepository.existsByIdAndUserId(id, user.getId());
+    }
 
+    @Transactional
+    public void deletePet(Long id, Principal principal) {
         Pet pet = this.findById(id);
+        User user = (User) userService.findByEmail(principal.getName());
 
-        return user.getRegisteredPets().contains(pet);
+        if (!pet.getUser().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "You can only delete your own pets");
+        }
+
+        petRepository.delete(pet);
     }
 }

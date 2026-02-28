@@ -242,15 +242,13 @@ class PetServiceUnitTests {
     void isPetFromLoggedUser_shouldReturnTrue_whenPetBelongsToUser() {
         when(principal.getName()).thenReturn("user@test.com");
         when(userService.findByEmail("user@test.com")).thenReturn(mockUser);
-        when(petRepository.findById(1L)).thenReturn(Optional.of(mockPet));
-
-        mockUser.getRegisteredPets().add(mockPet);
+        when(petRepository.existsByIdAndUserId(1L, 1)).thenReturn(true);
 
         boolean result = petService.isPetFromLoggedUser(1L, principal);
 
         assertTrue(result);
         verify(userService, times(1)).findByEmail("user@test.com");
-        verify(petRepository, times(1)).findById(1L);
+        verify(petRepository, times(1)).existsByIdAndUserId(1L, 1);
     }
 
     @Test
@@ -258,24 +256,25 @@ class PetServiceUnitTests {
     void isPetFromLoggedUser_shouldReturnFalse_whenPetDoesNotBelongToUser() {
         when(principal.getName()).thenReturn("user@test.com");
         when(userService.findByEmail("user@test.com")).thenReturn(mockUser);
-        when(petRepository.findById(1L)).thenReturn(Optional.of(mockPet));
+        when(petRepository.existsByIdAndUserId(1L, 1)).thenReturn(false);
 
         boolean result = petService.isPetFromLoggedUser(1L, principal);
 
         assertFalse(result);
         verify(userService, times(1)).findByEmail("user@test.com");
-        verify(petRepository, times(1)).findById(1L);
+        verify(petRepository, times(1)).existsByIdAndUserId(1L, 1);
     }
 
     @Test
-    @DisplayName("isPetFromLoggedUser should throw exception when pet does not exist")
-    void isPetFromLoggedUser_shouldThrowException_whenPetDoesNotExist() {
+    @DisplayName("isPetFromLoggedUser should return false when pet does not exist")
+    void isPetFromLoggedUser_shouldReturnFalse_whenPetDoesNotExist() {
         when(principal.getName()).thenReturn("user@test.com");
         when(userService.findByEmail("user@test.com")).thenReturn(mockUser);
-        when(petRepository.findById(999L)).thenReturn(Optional.empty());
+        when(petRepository.existsByIdAndUserId(999L, 1)).thenReturn(false);
 
-        assertThrows(ResponseStatusException.class,
-                () -> petService.isPetFromLoggedUser(999L, principal));
+        boolean result = petService.isPetFromLoggedUser(999L, principal);
+
+        assertFalse(result);
     }
 
     //registerNewPet SUCCESS TESTS

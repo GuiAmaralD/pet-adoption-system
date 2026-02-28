@@ -62,16 +62,37 @@ public class UserService {
     public void updatePassword(Integer id, String oldPassword, String newPassword){
         User user = this.findById(id);
 
-        if(!passwordEncoder.matches(oldPassword, user.getPassword())){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Given old password is wrong!");
-        }else{
-            if(Objects.equals(oldPassword, newPassword)){
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "New and old passwords cannot be the same");
-            }
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Given old password is wrong!"
+            );
+        }
+
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "New password cannot be the same as the old password"
+            );
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
 
         userRepository.save(user);
     }
+
+    @Transactional
+    public void deleteAccount(Integer id, String password) {
+        User user = this.findById(id);
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Given password is wrong!"
+            );
+        }
+
+        userRepository.delete(user);
+    }
 }
+

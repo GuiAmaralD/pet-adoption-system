@@ -29,6 +29,8 @@ public interface PetRepository extends JpaRepository<Pet, Long>, JpaSpecificatio
             Sex sex
     );
 
+    boolean existsByIdAndUserId(Long id, Integer userId);
+
     @Query("""
             SELECT p FROM Pet p
             WHERE (:specie IS NULL OR p.specie = :specie)
