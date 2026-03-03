@@ -19,10 +19,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("account")
 @CrossOrigin("*")
+@Tag(name = "Account", description = "Authenticated user account operations")
 public class UserAccountController {
 
     private final UserService userService;
@@ -35,12 +40,24 @@ public class UserAccountController {
 
 
     @GetMapping("/me")
+    @Operation(summary = "Get logged-in user", description = "Returns the authenticated user's profile.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Profile returned"),
+            @ApiResponse(responseCode = "401", description = "Not authenticated"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
     public ResponseEntity<UserResponseDTO> getLoggedUserInfo(Principal principal){
         User user = (User) userService.findByEmail(principal.getName());
         return ResponseEntity.ok().body(userMapper.toDTO(user));
     }
 
     @PutMapping
+    @Operation(summary = "Update account data", description = "Updates the user's name, email, and phone number.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Account updated"),
+            @ApiResponse(responseCode = "400", description = "Invalid payload"),
+            @ApiResponse(responseCode = "401", description = "Not authenticated")
+    })
     public ResponseEntity<UserResponseDTO> updateUser(@RequestBody @Valid UpdateDTO updateDTO,
                                                   Principal principal){
         User user = (User) userService.findByEmail(principal.getName());
@@ -51,6 +68,13 @@ public class UserAccountController {
     }
 
     @PutMapping("/password")
+    @Operation(summary = "Update password", description = "Updates the authenticated user's password.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Password updated"),
+            @ApiResponse(responseCode = "400", description = "Invalid payload"),
+            @ApiResponse(responseCode = "401", description = "Not authenticated"),
+            @ApiResponse(responseCode = "409", description = "Old password invalid or equals new password")
+    })
     public ResponseEntity<String> updatePassword(@RequestBody @Valid ChangePasswordDTO dto, Principal principal){
 
         User user = (User) userService.findByEmail(principal.getName());
@@ -62,6 +86,13 @@ public class UserAccountController {
     }
 
     @DeleteMapping
+    @Operation(summary = "Delete account", description = "Removes the authenticated user's account.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Account removed"),
+            @ApiResponse(responseCode = "400", description = "Invalid payload"),
+            @ApiResponse(responseCode = "401", description = "Not authenticated"),
+            @ApiResponse(responseCode = "409", description = "Invalid password")
+    })
     public ResponseEntity<Void> deleteAccount(@RequestBody @Valid DeleteAccountDTO dto, Principal principal) {
         User user = (User) userService.findByEmail(principal.getName());
         Integer id = user.getId();

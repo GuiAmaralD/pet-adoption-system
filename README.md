@@ -1,35 +1,51 @@
-# Sistema de Adoção de Animais - UNINTER
+# Adoption API
 
-Este projeto é um sistema de adoção de animais desenvolvido como parte de uma atividade extensionista da UNINTER. Ele utiliza Spring Boot e PostgreSQL para gerenciar informações de animais disponíveis para adoção, com cadastro de usuários e autenticação via JWT.
+API REST em Spring Boot para um sistema de adoção de pets. A API cobre cadastro e autenticação de usuários, cadastro de pets com imagens e filtros de busca. O projeto utiliza Spring Web, Spring Data JPA, Spring Security e validação com Bean Validation. As imagens são armazenadas no Supabase Storage. Há testes unitários e de integração com JUnit 5, Mockito e Spring Test.
 
-## Funcionalidades
+## Requisitos
+- Java 17
+- Maven (ou usar `./mvnw`)
+- PostgreSQL
 
-- Registro de animais para adoção com imagens.
-- Listagem e filtragem de animais por espécie, gênero e porte.
-- API REST para interação com o backend.
-- Armazenamento seguro de imagens.
-
-## Tecnologias
-- **Backend**: Java, Spring Boot, Spring Security, Spring Data JPA
-- **Banco de Dados**: PostgreSQL
-- **Containerização**: Docker
-
-## Instalação
-
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/GuiAmaralD/sistema-adocao-uninter.git
-   
-1. Navegue até o diretório do projeto e instale as dependências:
-   ```bash
-   cd sistema-adocao-uninter
-    ./mvnw clean install
-3. Configure o banco de dados PostgreSQL no application.properties.
-4. Inicie a aplicação:
+## Como rodar local
+1. Configure as variáveis de ambiente exigidas (veja `INFRA.md`).
+2. Suba o banco de dados.
+3. Rode a aplicação:
    ```bash
    ./mvnw spring-boot:run
+   ```
 
-## License
+## Testes
+Rodar testes unitários e de integração:
+```bash
+./mvnw test
+```
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-   
+## Estrutura de endpoints (resumo)
+- Auth:
+  - `POST /auth/register`
+  - `POST /auth/login`
+- Conta:
+  - `GET /account/me`
+  - `PUT /account`
+  - `PUT /account/password`
+  - `DELETE /account`
+- Pets:
+  - `GET /pet`
+  - `GET /pet/filter`
+  - `GET /pet/{id}`
+  - `POST /pet` (multipart)
+  - `PUT /pet/{id}`
+  - `PUT /pet/{id}/adopted`
+  - `DELETE /pet/{id}`
+- Usuários:
+  - `GET /user/{id}`
+
+## Documentação adicional
+- Infraestrutura e variáveis de ambiente: `INFRA.md`
+- Endpoints detalhados, payloads, exemplos e respostas:
+  - Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+  - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
+## Licença
+MIT. Veja `LICENSE.md`.

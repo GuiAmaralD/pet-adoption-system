@@ -25,10 +25,17 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @RestController
 @RequestMapping("auth")
 @CrossOrigin("*")
+@Tag(name = "Auth", description = "Authentication and registration endpoints")
 public class UserAuthenticationController {
 
     private final AuthenticationManager authenticationManager;
@@ -42,6 +49,14 @@ public class UserAuthenticationController {
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Authenticate user", description = "Validates credentials and returns a JWT token.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Authenticated successfully",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(example = "{\"token\":\"jwt-token\"}"))),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials"),
+            @ApiResponse(responseCode = "404", description = "Email not registered")
+    })
     public ResponseEntity<Map<String, String>> login(@RequestBody @Valid AuthenticationDTO data){
         Authentication auth;
         try{
@@ -65,6 +80,12 @@ public class UserAuthenticationController {
 
     
     @PostMapping("/register")
+    @Operation(summary = "Register user", description = "Creates a new user.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "User created"),
+            @ApiResponse(responseCode = "400", description = "Invalid payload"),
+            @ApiResponse(responseCode = "409", description = "Email already registered")
+    })
     public ResponseEntity register(@RequestBody @Valid RegisterDTO data){
         if(userService.isEmailRegistered(data.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "email already registered");
