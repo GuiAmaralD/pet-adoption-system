@@ -18,12 +18,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.server.ResponseStatusException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -65,6 +67,17 @@ class UserAccountControllerTests {
                 .andExpect(jsonPath("$.name").value("User"))
                 .andExpect(jsonPath("$.phoneNumber").value("11999999999"))
                 .andExpect(jsonPath("$.registeredPets.length()").value(0));
+    }
+
+    @Test
+    @DisplayName("GET /account/me should return NOT_FOUND when user does not exist")
+    @WithMockUser(username = "user@test.com")
+    void getLoggedUserInfo_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
+        when(userService.findByEmail("user@test.com"))
+                .thenThrow(new ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "User not found"));
+
+        mockMvc.perform(get("/account/me"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -146,6 +159,65 @@ class UserAccountControllerTests {
                 .andExpect(status().isBadRequest());
 
         verify(userService, never()).updatePassword(any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("DELETE /account should require authentication")
+    void deleteAccount_shouldRequireAuthentication() throws Exception {
+        mockMvc.perform(delete("/account")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "password": "secret" }
+                                """))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("DELETE /account should delete account when password is valid")
+    @WithMockUser(username = "user@test.com")
+    void deleteAccount_shouldDeleteAccount_whenPasswordIsValid() throws Exception {
+        User user = user();
+        when(userService.findByEmail("user@test.com")).thenReturn(user);
+
+        mockMvc.perform(delete("/account")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "password": "secret" }
+                                """))
+                .andExpect(status().isNoContent());
+
+        verify(userService).deleteAccount(1, "secret");
+    }
+
+    @Test
+    @DisplayName("DELETE /account should return CONFLICT when password is incorrect")
+    @WithMockUser(username = "user@test.com")
+    void deleteAccount_shouldReturnConflict_whenPasswordIsIncorrect() throws Exception {
+        User user = user();
+        when(userService.findByEmail("user@test.com")).thenReturn(user);
+        doThrow(new ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "wrong password"))
+                .when(userService).deleteAccount(1, "wrong");
+
+        mockMvc.perform(delete("/account")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "password": "wrong" }
+                                """))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    @DisplayName("DELETE /account should return BAD_REQUEST for invalid payload")
+    @WithMockUser(username = "user@test.com")
+    void deleteAccount_shouldReturnBadRequest_whenPayloadIsInvalid() throws Exception {
+        mockMvc.perform(delete("/account")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "password": "" }
+                                """))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).deleteAccount(any(), any());
     }
 
     private User user() {

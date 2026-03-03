@@ -23,6 +23,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.web.servlet.MockMvc;
+import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -122,6 +123,50 @@ class UserAuthenticationControllerTests {
     }
 
     @Test
+    @DisplayName("POST /auth/login should return UNAUTHORIZED when email is missing")
+    void login_shouldReturnUnauthorized_whenEmailIsMissing() throws Exception {
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new BadCredentialsException("bad credentials"));
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "password":"secret"
+                                }
+                                """))
+                .andExpect(status().isUnauthorized());
+
+        ArgumentCaptor<UsernamePasswordAuthenticationToken> captor =
+                ArgumentCaptor.forClass(UsernamePasswordAuthenticationToken.class);
+        verify(authenticationManager).authenticate(captor.capture());
+        assertNull(captor.getValue().getPrincipal());
+        assertEquals("secret", captor.getValue().getCredentials());
+    }
+
+    @Test
+    @DisplayName("POST /auth/login should return UNAUTHORIZED when password is missing")
+    void login_shouldReturnUnauthorized_whenPasswordIsMissing() throws Exception {
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new BadCredentialsException("bad credentials"));
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email":"user@test.com"
+                                }
+                                """))
+                .andExpect(status().isUnauthorized());
+
+        ArgumentCaptor<UsernamePasswordAuthenticationToken> captor =
+                ArgumentCaptor.forClass(UsernamePasswordAuthenticationToken.class);
+        verify(authenticationManager).authenticate(captor.capture());
+        assertEquals("user@test.com", captor.getValue().getPrincipal());
+        assertNull(captor.getValue().getCredentials());
+    }
+
+    @Test
     @DisplayName("POST /auth/register should create user when email is available")
     void register_shouldCreateUser_whenEmailIsAvailable() throws Exception {
         when(userService.isEmailRegistered("new@test.com")).thenReturn(false);
@@ -179,6 +224,23 @@ class UserAuthenticationControllerTests {
                                   "name":"User123",
                                   "phoneNumber":"invalid-phone",
                                   "email":"invalid-email",
+                                  "password":"plainPassword"
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("POST /auth/register should return BAD_REQUEST when email is missing")
+    void register_shouldReturnBadRequest_whenEmailIsMissing() throws Exception {
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name":"User",
+                                  "phoneNumber":"11999999999",
                                   "password":"plainPassword"
                                 }
                                 """))
