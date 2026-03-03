@@ -2,6 +2,7 @@ package com.example.auth.Pet;
 
 import com.example.auth.Pet.DTOs.RegisterPetDTO;
 import com.example.auth.Pet.DTOs.PetResponseDTO;
+import com.example.auth.Pet.DTOs.UpdatePetDTO;
 import com.example.auth.Pet.enums.Sex;
 import com.example.auth.Pet.enums.Size;
 import com.example.auth.Pet.enums.Specie;
@@ -593,5 +594,129 @@ class PetServiceUnitTests {
         return pet;
     }
 
+    // ==================== updatePet() TESTS ====================
+
+    @Test
+    @DisplayName("updatePet should update fields when user is owner")
+    void updatePet_shouldUpdateFields_whenUserIsOwner() {
+        when(principal.getName()).thenReturn("user@test.com");
+        when(userService.findByEmail("user@test.com")).thenReturn(mockUser);
+        when(petRepository.findById(1L)).thenReturn(Optional.of(mockPet));
+        when(petRepository.save(any(Pet.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UpdatePetDTO dto = new UpdatePetDTO(
+                "Updated",
+                Sex.FEMALE,
+                "Updated desc",
+                Specie.CAT,
+                Size.SMALL
+        );
+
+        PetResponseDTO result = petService.updatePet(1L, dto, principal);
+
+        assertNotNull(result);
+        assertEquals("Updated", mockPet.getNickname());
+        assertEquals(Sex.FEMALE, mockPet.getSex());
+        assertEquals("Updated desc", mockPet.getDescription());
+        assertEquals(Specie.CAT, mockPet.getSpecie());
+        assertEquals(Size.SMALL, mockPet.getSize());
+        verify(petRepository).save(mockPet);
+    }
+
+    @Test
+    @DisplayName("updatePet should throw UNAUTHORIZED when user is not owner")
+    void updatePet_shouldThrowUnauthorized_whenUserIsNotOwner() {
+        User otherUser = new User();
+        otherUser.setId(2);
+        mockPet.setUser(otherUser);
+
+        when(principal.getName()).thenReturn("user@test.com");
+        when(userService.findByEmail("user@test.com")).thenReturn(mockUser);
+        when(petRepository.findById(1L)).thenReturn(Optional.of(mockPet));
+
+        UpdatePetDTO dto = new UpdatePetDTO(
+                "Updated",
+                Sex.FEMALE,
+                "Updated desc",
+                Specie.CAT,
+                Size.SMALL
+        );
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> petService.updatePet(1L, dto, principal)
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+        verify(petRepository, never()).save(any(Pet.class));
+    }
+
+    @Test
+    @DisplayName("updatePet should throw NOT_FOUND when pet does not exist")
+    void updatePet_shouldThrowNotFound_whenPetDoesNotExist() {
+        when(petRepository.findById(999L)).thenReturn(Optional.empty());
+
+        UpdatePetDTO dto = new UpdatePetDTO(
+                "Updated",
+                Sex.FEMALE,
+                "Updated desc",
+                Specie.CAT,
+                Size.SMALL
+        );
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> petService.updatePet(999L, dto, principal)
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+    }
+
+    // ==================== deletePet() TESTS ====================
+
+    @Test
+    @DisplayName("deletePet should delete when user is owner")
+    void deletePet_shouldDelete_whenUserIsOwner() {
+        when(principal.getName()).thenReturn("user@test.com");
+        when(userService.findByEmail("user@test.com")).thenReturn(mockUser);
+        when(petRepository.findById(1L)).thenReturn(Optional.of(mockPet));
+
+        petService.deletePet(1L, principal);
+
+        verify(petRepository).delete(mockPet);
+    }
+
+    @Test
+    @DisplayName("deletePet should throw UNAUTHORIZED when user is not owner")
+    void deletePet_shouldThrowUnauthorized_whenUserIsNotOwner() {
+        User otherUser = new User();
+        otherUser.setId(2);
+        mockPet.setUser(otherUser);
+
+        when(principal.getName()).thenReturn("user@test.com");
+        when(userService.findByEmail("user@test.com")).thenReturn(mockUser);
+        when(petRepository.findById(1L)).thenReturn(Optional.of(mockPet));
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> petService.deletePet(1L, principal)
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+        verify(petRepository, never()).delete(any(Pet.class));
+    }
+
+    @Test
+    @DisplayName("deletePet should throw NOT_FOUND when pet does not exist")
+    void deletePet_shouldThrowNotFound_whenPetDoesNotExist() {
+        when(petRepository.findById(999L)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> petService.deletePet(999L, principal)
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+    }
 
 }

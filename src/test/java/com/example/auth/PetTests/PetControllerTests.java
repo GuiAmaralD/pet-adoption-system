@@ -343,6 +343,146 @@ class PetControllerTests {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    @DisplayName("PUT /pet/{id} should require authentication")
+    void updatePet_shouldRequireAuthentication() throws Exception {
+        mockMvc.perform(put("/pet/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validUpdatePetJson()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("PUT /pet/{id} should update pet when request is valid")
+    @WithMockUser(username = "user@test.com")
+    void updatePet_shouldUpdatePet_whenRequestIsValid() throws Exception {
+        when(petService.updatePet(eq(1L), any(), any()))
+                .thenReturn(petDto(1L, "Rex"));
+
+        mockMvc.perform(put("/pet/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validUpdatePetJson()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.nickname").value("Rex"));
+    }
+
+    @Test
+    @DisplayName("PUT /pet/{id} should return UNAUTHORIZED when pet is not from logged user")
+    @WithMockUser(username = "user@test.com")
+    void updatePet_shouldReturnUnauthorized_whenPetIsNotFromLoggedUser() throws Exception {
+        when(petService.updatePet(eq(1L), any(), any()))
+                .thenThrow(new ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Not owner"));
+
+        mockMvc.perform(put("/pet/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validUpdatePetJson()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("PUT /pet/{id} should return NOT_FOUND when pet does not exist")
+    @WithMockUser(username = "user@test.com")
+    void updatePet_shouldReturnNotFound_whenPetDoesNotExist() throws Exception {
+        when(petService.updatePet(eq(999L), any(), any()))
+                .thenThrow(new ResponseStatusException(NOT_FOUND, "Pet with such Id not found"));
+
+        mockMvc.perform(put("/pet/999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validUpdatePetJson()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("PUT /pet/{id} should return BAD_REQUEST for invalid payload")
+    @WithMockUser(username = "user@test.com")
+    void updatePet_shouldReturnBadRequest_whenPayloadIsInvalid() throws Exception {
+        mockMvc.perform(put("/pet/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "nickname":"",
+                                  "sex":null,
+                                  "description":"desc",
+                                  "specie":null,
+                                  "size":null
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("PUT /pet/{id} should return BAD_REQUEST for invalid enum")
+    @WithMockUser(username = "user@test.com")
+    void updatePet_shouldReturnBadRequest_whenEnumIsInvalid() throws Exception {
+        mockMvc.perform(put("/pet/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "nickname":"Rex",
+                                  "sex":"INVALID",
+                                  "description":"desc",
+                                  "specie":"DOG",
+                                  "size":"MEDIUM"
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("PUT /pet/{id} should return BAD_REQUEST when required fields are missing")
+    @WithMockUser(username = "user@test.com")
+    void updatePet_shouldReturnBadRequest_whenRequiredFieldsAreMissing() throws Exception {
+        mockMvc.perform(put("/pet/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "nickname":"Rex",
+                                  "description":"desc"
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("DELETE /pet/{id} should require authentication")
+    void deletePet_shouldRequireAuthentication() throws Exception {
+        mockMvc.perform(delete("/pet/1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("DELETE /pet/{id} should delete pet when user is owner")
+    @WithMockUser(username = "user@test.com")
+    void deletePet_shouldDelete_whenUserIsOwner() throws Exception {
+        mockMvc.perform(delete("/pet/1"))
+                .andExpect(status().isNoContent());
+
+        verify(petService).deletePet(eq(1L), any());
+    }
+
+    @Test
+    @DisplayName("DELETE /pet/{id} should return UNAUTHORIZED when pet is not from logged user")
+    @WithMockUser(username = "user@test.com")
+    void deletePet_shouldReturnUnauthorized_whenPetIsNotFromLoggedUser() throws Exception {
+        doThrow(new ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Not owner"))
+                .when(petService).deletePet(eq(1L), any());
+
+        mockMvc.perform(delete("/pet/1"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("DELETE /pet/{id} should return NOT_FOUND when pet does not exist")
+    @WithMockUser(username = "user@test.com")
+    void deletePet_shouldReturnNotFound_whenPetDoesNotExist() throws Exception {
+        doThrow(new ResponseStatusException(NOT_FOUND, "Pet with such Id not found"))
+                .when(petService).deletePet(eq(999L), any());
+
+        mockMvc.perform(delete("/pet/999"))
+                .andExpect(status().isNotFound());
+    }
+
 
     private byte[] validPetJson() {
         return """
@@ -354,6 +494,18 @@ class PetControllerTests {
           "size": "SMALL"
         }
         """.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    private String validUpdatePetJson() {
+        return """
+                {
+                  "nickname": "Rex",
+                  "sex": "MALE",
+                  "description": "Friendly",
+                  "specie": "DOG",
+                  "size": "MEDIUM"
+                }
+                """;
     }
 
     private PetResponseDTO petDto(Long id, String nickname) {
