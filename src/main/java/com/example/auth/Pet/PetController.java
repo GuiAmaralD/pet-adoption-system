@@ -3,6 +3,7 @@ package com.example.auth.Pet;
 
 import com.example.auth.Pet.DTOs.RegisterPetDTO;
 import com.example.auth.Pet.DTOs.PetResponseDTO;
+import com.example.auth.Pet.DTOs.UpdatePetDTO;
 import com.example.auth.Pet.enums.Sex;
 import com.example.auth.Pet.enums.Size;
 import com.example.auth.Pet.enums.Specie;
@@ -19,7 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/pet")
@@ -67,6 +67,15 @@ public class PetController {
         PetResponseDTO response = petService.registerNewPet(dto, images, user);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PetResponseDTO> updatePet(
+            @PathVariable Long id,
+            @RequestBody @Valid UpdatePetDTO dto,
+            Principal principal) {
+        PetResponseDTO response = petService.updatePet(id, dto, principal);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}/adopted")

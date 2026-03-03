@@ -1,6 +1,7 @@
 package com.example.auth.user.services;
 
 
+import com.example.auth.Pet.SupabaseStorageService;
 import com.example.auth.user.DTOs.UpdateDTO;
 import com.example.auth.user.User;
 import com.example.auth.user.UserRepository;
@@ -11,15 +12,18 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Objects;
+import java.util.List;
+
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final SupabaseStorageService supabaseStorageService;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder){
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, SupabaseStorageService supabaseStorageService){
+        this.supabaseStorageService = supabaseStorageService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -86,13 +90,16 @@ public class UserService {
         User user = this.findById(id);
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "Given password is wrong!"
-            );
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Given password is wrong!");
         }
 
-        userRepository.delete(user);
+        List<String> allUrls = user.getRegisteredPets().stream()
+                .flatMap(p -> p.getImageUrls().stream())
+                .toList();
+
+        userRepository.delete(user); // cascade deleta os pets
+
+        supabaseStorageService.deleteAllByPublicUrls("pet-images", allUrls);
     }
 }
 

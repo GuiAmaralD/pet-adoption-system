@@ -2,6 +2,7 @@ package com.example.auth.Pet;
 
 import com.example.auth.Pet.DTOs.RegisterPetDTO;
 import com.example.auth.Pet.DTOs.PetResponseDTO;
+import com.example.auth.Pet.DTOs.UpdatePetDTO;
 import com.example.auth.Pet.enums.Sex;
 import com.example.auth.Pet.enums.Size;
 import com.example.auth.Pet.enums.Specie;
@@ -133,7 +134,28 @@ public class PetService {
     }
 
     @Transactional
+    public PetResponseDTO updatePet(Long id, UpdatePetDTO dto, Principal principal) {
+        Pet pet = this.findById(id);
+        User user = (User) userService.findByEmail(principal.getName());
+
+        if (!pet.getUser().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "You can only update your own pets");
+        }
+
+        pet.setNickname(dto.nickname());
+        pet.setSex(dto.sex());
+        pet.setDescription(dto.description());
+        pet.setSpecie(dto.specie());
+        pet.setSize(dto.size());
+
+        petRepository.save(pet);
+        return petMapper.toDTO(pet);
+    }
+
+    @Transactional
     public void deletePet(Long id, Principal principal) {
+
         Pet pet = this.findById(id);
         User user = (User) userService.findByEmail(principal.getName());
 
@@ -142,6 +164,10 @@ public class PetService {
                     "You can only delete your own pets");
         }
 
+        List<String> urls = new ArrayList<>(pet.getImageUrls());
+
         petRepository.delete(pet);
+
+        supabaseStorageService.deleteAllByPublicUrls("pet-images", urls);
     }
 }
