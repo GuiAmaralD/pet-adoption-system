@@ -1,7 +1,7 @@
 package com.example.auth.user;
 
-import com.example.auth.Pet.DTOs.PetResponseDTO;
-import com.example.auth.Pet.Pet;
+import com.example.auth.pet.DTOs.PetResponseDTO;
+import com.example.auth.pet.Pet;
 import com.example.auth.user.DTOs.UserResponseDTO;
 import com.example.auth.user.DTOs.UserSummaryDTO;
 import org.springframework.stereotype.Component;

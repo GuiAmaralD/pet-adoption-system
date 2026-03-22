@@ -1,6 +1,6 @@
 package com.example.auth.PetTests;
 
-import com.example.auth.Pet.SupabaseStorageService;
+import com.example.auth.pet.SupabaseStorageService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;

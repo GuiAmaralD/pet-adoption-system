@@ -1,11 +1,11 @@
-package com.example.auth.Pet;
+package com.example.auth.pet;
 
-import com.example.auth.Pet.DTOs.RegisterPetDTO;
-import com.example.auth.Pet.DTOs.PetResponseDTO;
-import com.example.auth.Pet.DTOs.UpdatePetDTO;
-import com.example.auth.Pet.enums.Sex;
-import com.example.auth.Pet.enums.Size;
-import com.example.auth.Pet.enums.Specie;
+import com.example.auth.pet.DTOs.RegisterPetDTO;
+import com.example.auth.pet.DTOs.PetResponseDTO;
+import com.example.auth.pet.DTOs.UpdatePetDTO;
+import com.example.auth.pet.enums.Sex;
+import com.example.auth.pet.enums.Size;
+import com.example.auth.pet.enums.Specie;
 import com.example.auth.user.User;
 import com.example.auth.user.UserMapper;
 import com.example.auth.user.services.UserService;
@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.example.auth.Pet.enums.Sex.MALE;
-import static com.example.auth.Pet.enums.Size.*;
-import static com.example.auth.Pet.enums.Specie.DOG;
+import static com.example.auth.pet.enums.Sex.MALE;
+import static com.example.auth.pet.enums.Size.*;
+import static com.example.auth.pet.enums.Specie.DOG;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;

@@ -1,7 +1,7 @@
 package com.example.auth.user.services;
 
 
-import com.example.auth.Pet.SupabaseStorageService;
+import com.example.auth.pet.SupabaseStorageService;
 import com.example.auth.user.DTOs.UpdateDTO;
 import com.example.auth.user.User;
 import com.example.auth.user.UserRepository;

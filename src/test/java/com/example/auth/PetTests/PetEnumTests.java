@@ -1,4 +1,4 @@
-package com.example.auth.Pet.enums;
+package com.example.auth.pet.enums;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;

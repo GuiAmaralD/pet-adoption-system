@@ -1,12 +1,12 @@
-package com.example.auth.Pet;
+package com.example.auth.pet;
 
 
-import com.example.auth.Pet.DTOs.RegisterPetDTO;
-import com.example.auth.Pet.DTOs.PetResponseDTO;
-import com.example.auth.Pet.DTOs.UpdatePetDTO;
-import com.example.auth.Pet.enums.Sex;
-import com.example.auth.Pet.enums.Size;
-import com.example.auth.Pet.enums.Specie;
+import com.example.auth.pet.DTOs.RegisterPetDTO;
+import com.example.auth.pet.DTOs.PetResponseDTO;
+import com.example.auth.pet.DTOs.UpdatePetDTO;
+import com.example.auth.pet.enums.Sex;
+import com.example.auth.pet.enums.Size;
+import com.example.auth.pet.enums.Specie;
 import com.example.auth.user.User;
 import com.example.auth.user.services.UserService;
 import jakarta.validation.Valid;

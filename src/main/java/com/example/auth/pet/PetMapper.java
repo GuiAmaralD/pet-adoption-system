@@ -1,8 +1,8 @@
-package com.example.auth.Pet;
+package com.example.auth.pet;
 
 
-import com.example.auth.Pet.DTOs.PetResponseDTO;
-import com.example.auth.Pet.DTOs.RegisterPetDTO;
+import com.example.auth.pet.DTOs.PetResponseDTO;
+import com.example.auth.pet.DTOs.RegisterPetDTO;
 import com.example.auth.user.User;
 import com.example.auth.user.UserMapper;
 import org.springframework.stereotype.Component;

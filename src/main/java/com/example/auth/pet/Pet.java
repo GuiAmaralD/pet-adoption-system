@@ -1,9 +1,9 @@
-package com.example.auth.Pet;
+package com.example.auth.pet;
 
 
-import com.example.auth.Pet.enums.Sex;
-import com.example.auth.Pet.enums.Size;
-import com.example.auth.Pet.enums.Specie;
+import com.example.auth.pet.enums.Sex;
+import com.example.auth.pet.enums.Size;
+import com.example.auth.pet.enums.Specie;
 import com.example.auth.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;

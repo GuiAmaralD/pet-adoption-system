@@ -1,6 +1,6 @@
 package com.example.auth.user;
 
-import com.example.auth.Pet.Pet;
+import com.example.auth.pet.Pet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;

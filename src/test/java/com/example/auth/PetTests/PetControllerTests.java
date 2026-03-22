@@ -1,10 +1,10 @@
-package com.example.auth.Pet;
+package com.example.auth.pet;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.example.auth.Pet.DTOs.PetResponseDTO;
-import com.example.auth.Pet.enums.Sex;
-import com.example.auth.Pet.enums.Size;
-import com.example.auth.Pet.enums.Specie;
+import com.example.auth.pet.DTOs.PetResponseDTO;
+import com.example.auth.pet.enums.Sex;
+import com.example.auth.pet.enums.Size;
+import com.example.auth.pet.enums.Specie;
 import com.example.auth.infra.security.SecurityConfigurations;
 import com.example.auth.infra.security.SecurityFilter;
 import com.example.auth.infra.security.TokenService;

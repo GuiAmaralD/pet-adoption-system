@@ -1,6 +1,6 @@
 package com.example.auth.user.DTOs;
 
-import com.example.auth.Pet.DTOs.PetResponseDTO;
+import com.example.auth.pet.DTOs.PetResponseDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;

@@ -1,8 +1,8 @@
-package com.example.auth.Pet.DTOs;
+package com.example.auth.pet.DTOs;
 
-import com.example.auth.Pet.enums.Sex;
-import com.example.auth.Pet.enums.Size;
-import com.example.auth.Pet.enums.Specie;
+import com.example.auth.pet.enums.Sex;
+import com.example.auth.pet.enums.Size;
+import com.example.auth.pet.enums.Specie;
 import com.example.auth.user.DTOs.UserSummaryDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 

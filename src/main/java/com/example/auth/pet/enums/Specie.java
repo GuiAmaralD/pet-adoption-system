@@ -1,4 +1,4 @@
-package com.example.auth.Pet.enums;
+package com.example.auth.pet.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;

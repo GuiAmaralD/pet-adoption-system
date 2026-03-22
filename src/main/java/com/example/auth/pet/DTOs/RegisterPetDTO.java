@@ -1,7 +1,7 @@
-package com.example.auth.Pet.DTOs;
+package com.example.auth.pet.DTOs;
 
-import com.example.auth.Pet.enums.Sex;
-import com.example.auth.Pet.enums.Specie;
+import com.example.auth.pet.enums.Sex;
+import com.example.auth.pet.enums.Specie;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -21,6 +21,6 @@ public record RegisterPetDTO(
         @Schema(example = "DOG")
         Specie specie,
         @Schema(example = "MEDIUM")
-        com.example.auth.Pet.enums.Size size
+        com.example.auth.pet.enums.Size size
 ) {
 }
