@@ -1,6 +1,6 @@
 ﻿# Adoption API
 
-API REST em Spring Boot para um sistema de adocao de pets. A API cobre cadastro e autenticacao de usuarios, cadastro de pets com imagens e filtros de busca. O projeto utiliza Spring Web, Spring Data JPA, Spring Security e validacao com Bean Validation. As imagens sao armazenadas no Supabase Storage. Ha testes unitarios e de integracao com JUnit 5, Mockito e Spring Test.
+API REST em Spring Boot para um sistema de adoção de pets. A API cobre cadastro e autenticação de usuários, cadastro de pets com imagens e filtros de busca. O projeto utiliza Spring Web, Spring Data JPA, Flyway, Spring Security e validação com Bean Validation. As imagens são armazenadas no Supabase Storage. Há testes unitários e de integração com JUnit 5, Mockito e Spring Test.
 
 ## Requisitos
 - Java 17
@@ -8,12 +8,14 @@ API REST em Spring Boot para um sistema de adocao de pets. A API cobre cadastro 
 - PostgreSQL
 
 ## Como rodar local
-1. Configure as variaveis de ambiente exigidas (veja `INFRA.md`).
+1. Configure as variáveis de ambiente exigidas (veja `INFRA.md`).
 2. Suba o banco de dados.
-3. Rode a aplicacao:
+3. Rode a aplicação:
    ```bash
    ./mvnw spring-boot:run
    ```
+
+Ao iniciar, o Flyway aplica automaticamente as migrations. Detalhes de banco e migrações estão no `INFRA.md`.
 
 ## Docker
 Build da imagem:
@@ -26,12 +28,12 @@ Executar container:
 docker run --rm -p 8080:8080 --env-file .env adoption-api:latest
 ```
 
-Observacões:
-- Use `--env-file .env` (ou `-e CHAVE=VALOR`) para passar as variaveis de ambiente exigidas pela aplicacao.
-- Garanta que o PostgreSQme eacessivel a partir do container.
+Observações:
+- Use `--env-file .env` (ou `-e CHAVE=VALOR`) para passar as variáveis de ambiente exigidas pela aplicação.
+- Garanta que o PostgreSQL esteja acessível a partir do container.
 
 ## Testes
-Rodar testes unitarios e de integracao:
+Rodar testes unitários e de integração:
 ```bash
 ./mvnw test
 ```
@@ -53,14 +55,14 @@ Rodar testes unitarios e de integracao:
   - `PUT /pet/{id}`
   - `PUT /pet/{id}/adopted`
   - `DELETE /pet/{id}`
-- Usuarios:
+- Usuários:
   - `GET /user/{id}`
 
-## Documentacao adicional
-- Infraestrutura e variaveis de ambiente: `INFRA.md`
+## Documentação adicional
+- Infraestrutura e variáveis de ambiente: `INFRA.md`
 - Endpoints detalhados, payloads, exemplos e respostas:
   - Swagger UI: `http://localhost:8080/swagger-ui/index.html`
   - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
-## Licenca
+## Licença
 MIT. Veja `LICENSE.md`.
