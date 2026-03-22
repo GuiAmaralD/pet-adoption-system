@@ -25,6 +25,7 @@ public class User implements Serializable, UserDetails {
     private String phoneNumber;
     @JsonIgnore
     private String password;
+    @Enumerated(EnumType.STRING)
     private UserRole role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
