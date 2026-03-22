@@ -127,7 +127,7 @@ public class PetController {
             pet.setAdopted(true);
             petService.save(pet);
         }else{
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "You can only update your pets data");
         }
         return ResponseEntity.ok().build();

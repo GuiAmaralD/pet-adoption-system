@@ -624,8 +624,8 @@ class PetServiceUnitTests {
     }
 
     @Test
-    @DisplayName("updatePet should throw UNAUTHORIZED when user is not owner")
-    void updatePet_shouldThrowUnauthorized_whenUserIsNotOwner() {
+    @DisplayName("updatePet should throw FORBIDDEN when user is not owner")
+    void updatePet_shouldThrowForbidden_whenUserIsNotOwner() {
         User otherUser = new User();
         otherUser.setId(2);
         mockPet.setUser(otherUser);
@@ -647,7 +647,7 @@ class PetServiceUnitTests {
                 () -> petService.updatePet(1L, dto, principal)
         );
 
-        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
         verify(petRepository, never()).save(any(Pet.class));
     }
 
@@ -687,8 +687,8 @@ class PetServiceUnitTests {
     }
 
     @Test
-    @DisplayName("deletePet should throw UNAUTHORIZED when user is not owner")
-    void deletePet_shouldThrowUnauthorized_whenUserIsNotOwner() {
+    @DisplayName("deletePet should throw FORBIDDEN when user is not owner")
+    void deletePet_shouldThrowForbidden_whenUserIsNotOwner() {
         User otherUser = new User();
         otherUser.setId(2);
         mockPet.setUser(otherUser);
@@ -702,7 +702,7 @@ class PetServiceUnitTests {
                 () -> petService.deletePet(1L, principal)
         );
 
-        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
         verify(petRepository, never()).delete(any(Pet.class));
     }
 

@@ -139,7 +139,7 @@ public class PetService {
         User user = (User) userService.findByEmail(principal.getName());
 
         if (!pet.getUser().getId().equals(user.getId())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "You can only update your own pets");
         }
 
@@ -160,7 +160,7 @@ public class PetService {
         User user = (User) userService.findByEmail(principal.getName());
 
         if (!pet.getUser().getId().equals(user.getId())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "You can only delete your own pets");
         }
 

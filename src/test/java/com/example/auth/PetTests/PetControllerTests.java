@@ -290,16 +290,16 @@ class PetControllerTests {
     }
 
     @Test
-    @DisplayName("PUT /pet/{id}/adopted should return UNAUTHORIZED when pet is not from logged user")
+    @DisplayName("PUT /pet/{id}/adopted should return FORBIDDEN when pet is not from logged user")
     @WithMockUser(username = "user@test.com")
-    void setAdoptedTrue_shouldReturnUnauthorized_whenPetIsNotFromLoggedUser() throws Exception {
+    void setAdoptedTrue_shouldReturnForbidden_whenPetIsNotFromLoggedUser() throws Exception {
         Pet pet = new Pet();
         pet.setId(1L);
         when(petService.findById(1L)).thenReturn(pet);
         when(petService.isPetFromLoggedUser(eq(1L), any())).thenReturn(false);
 
         mockMvc.perform(put("/pet/1/adopted"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
 
         verify(petService, never()).save(any());
     }
@@ -368,16 +368,16 @@ class PetControllerTests {
     }
 
     @Test
-    @DisplayName("PUT /pet/{id} should return UNAUTHORIZED when pet is not from logged user")
+    @DisplayName("PUT /pet/{id} should return FORBIDDEN when pet is not from logged user")
     @WithMockUser(username = "user@test.com")
-    void updatePet_shouldReturnUnauthorized_whenPetIsNotFromLoggedUser() throws Exception {
+    void updatePet_shouldReturnForbidden_whenPetIsNotFromLoggedUser() throws Exception {
         when(petService.updatePet(eq(1L), any(), any()))
-                .thenThrow(new ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Not owner"));
+                .thenThrow(new ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN, "Not owner"));
 
         mockMvc.perform(put("/pet/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validUpdatePetJson()))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -462,14 +462,14 @@ class PetControllerTests {
     }
 
     @Test
-    @DisplayName("DELETE /pet/{id} should return UNAUTHORIZED when pet is not from logged user")
+    @DisplayName("DELETE /pet/{id} should return FORBIDDEN when pet is not from logged user")
     @WithMockUser(username = "user@test.com")
-    void deletePet_shouldReturnUnauthorized_whenPetIsNotFromLoggedUser() throws Exception {
-        doThrow(new ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Not owner"))
+    void deletePet_shouldReturnForbidden_whenPetIsNotFromLoggedUser() throws Exception {
+        doThrow(new ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN, "Not owner"))
                 .when(petService).deletePet(eq(1L), any());
 
         mockMvc.perform(delete("/pet/1"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
