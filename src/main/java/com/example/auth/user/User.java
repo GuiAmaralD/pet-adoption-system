@@ -16,15 +16,19 @@ import java.util.Objects;
 @Table(name = "users")
 @Entity(name = "users")
 public class User implements Serializable, UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
+
     @Column(unique = true)
     private String email;
     private String phoneNumber;
+
     @JsonIgnore
     private String password;
+
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
