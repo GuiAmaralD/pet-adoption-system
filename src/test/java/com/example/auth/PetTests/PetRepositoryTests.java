@@ -76,7 +76,7 @@ class PetRepositoryTests {
         Pet saved = petRepository.save(pet);
 
         assertTrue(petRepository.existsByIdAndUserId(saved.getId(), user.getId()));
-        assertFalse(petRepository.existsByIdAndUserId(saved.getId(), 999));
+        assertFalse(petRepository.existsByIdAndUserId(saved.getId(), 999L));
     }
 
     @Test

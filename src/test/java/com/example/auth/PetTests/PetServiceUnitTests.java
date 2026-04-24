@@ -61,7 +61,7 @@ class PetServiceUnitTests {
     @BeforeEach
     void setUp() {
         mockUser = new User();
-        mockUser.setId(1);
+        mockUser.setId(1L);
         mockUser.setEmail("user@test.com");
         mockUser.setRegisteredPets(new ArrayList<>());
 
@@ -243,13 +243,13 @@ class PetServiceUnitTests {
     void isPetFromLoggedUser_shouldReturnTrue_whenPetBelongsToUser() {
         when(principal.getName()).thenReturn("user@test.com");
         when(userService.findByEmail("user@test.com")).thenReturn(mockUser);
-        when(petRepository.existsByIdAndUserId(1L, 1)).thenReturn(true);
+        when(petRepository.existsByIdAndUserId(1L, 1L)).thenReturn(true);
 
         boolean result = petService.isPetFromLoggedUser(1L, principal);
 
         assertTrue(result);
         verify(userService, times(1)).findByEmail("user@test.com");
-        verify(petRepository, times(1)).existsByIdAndUserId(1L, 1);
+        verify(petRepository, times(1)).existsByIdAndUserId(1L, 1L);
     }
 
     @Test
@@ -257,13 +257,13 @@ class PetServiceUnitTests {
     void isPetFromLoggedUser_shouldReturnFalse_whenPetDoesNotBelongToUser() {
         when(principal.getName()).thenReturn("user@test.com");
         when(userService.findByEmail("user@test.com")).thenReturn(mockUser);
-        when(petRepository.existsByIdAndUserId(1L, 1)).thenReturn(false);
+        when(petRepository.existsByIdAndUserId(1L, 1L)).thenReturn(false);
 
         boolean result = petService.isPetFromLoggedUser(1L, principal);
 
         assertFalse(result);
         verify(userService, times(1)).findByEmail("user@test.com");
-        verify(petRepository, times(1)).existsByIdAndUserId(1L, 1);
+        verify(petRepository, times(1)).existsByIdAndUserId(1L, 1L);
     }
 
     @Test
@@ -271,7 +271,7 @@ class PetServiceUnitTests {
     void isPetFromLoggedUser_shouldReturnFalse_whenPetDoesNotExist() {
         when(principal.getName()).thenReturn("user@test.com");
         when(userService.findByEmail("user@test.com")).thenReturn(mockUser);
-        when(petRepository.existsByIdAndUserId(999L, 1)).thenReturn(false);
+        when(petRepository.existsByIdAndUserId(999L, 1L)).thenReturn(false);
 
         boolean result = petService.isPetFromLoggedUser(999L, principal);
 
@@ -627,7 +627,7 @@ class PetServiceUnitTests {
     @DisplayName("updatePet should throw FORBIDDEN when user is not owner")
     void updatePet_shouldThrowForbidden_whenUserIsNotOwner() {
         User otherUser = new User();
-        otherUser.setId(2);
+        otherUser.setId(2L);
         mockPet.setUser(otherUser);
 
         when(principal.getName()).thenReturn("user@test.com");
@@ -690,7 +690,7 @@ class PetServiceUnitTests {
     @DisplayName("deletePet should throw FORBIDDEN when user is not owner")
     void deletePet_shouldThrowForbidden_whenUserIsNotOwner() {
         User otherUser = new User();
-        otherUser.setId(2);
+        otherUser.setId(2L);
         mockPet.setUser(otherUser);
 
         when(principal.getName()).thenReturn("user@test.com");

@@ -32,7 +32,7 @@ class PetMapperTests {
                 Specie.CAT,
                 Size.SMALL
         );
-        User user = new User(1, "Ana", "ana@test.com", "11999999999", "secret", UserRole.USER);
+        User user = new User(1L, "Ana", "ana@test.com", "11999999999", "secret", UserRole.USER);
 
         Pet result = petMapper.toEntity(dto, user);
 
@@ -49,7 +49,7 @@ class PetMapperTests {
     @Test
     @DisplayName("toDTO should map Pet entity to PetResponseDTO")
     void toDto_shouldMapPetToResponseDto() {
-        User user = new User(2, "Joao", "joao@test.com", "11988888888", "secret", UserRole.USER);
+        User user = new User(2L, "Joao", "joao@test.com", "11988888888", "secret", UserRole.USER);
         Pet pet = new Pet();
         pet.setId(10L);
         pet.setNickname("Rex");
@@ -78,7 +78,7 @@ class PetMapperTests {
     @Test
     @DisplayName("toDTOList should map list of pets to list of response DTOs")
     void toDtoList_shouldMapListOfPets() {
-        User user = new User(3, "Maria", "maria@test.com", "11977777777", "secret", UserRole.USER);
+        User user = new User(3L, "Maria", "maria@test.com", "11977777777", "secret", UserRole.USER);
 
         Pet first = new Pet();
         first.setId(1L);

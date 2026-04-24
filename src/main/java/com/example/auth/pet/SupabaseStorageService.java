@@ -8,6 +8,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -64,7 +65,7 @@ public class SupabaseStorageService {
         if (filePath == null || filePath.isBlank()) return;
 
         webClient.delete()
-                .uri(supabaseUrl + "/storage/v1/object/" + bucket + "/" + encodePath(filePath))
+                .uri(URI.create(supabaseUrl + "/storage/v1/object/" + bucket + "/" + encodePath(filePath)))
                 .header("Authorization", "Bearer " + supabaseKey)
                 .header("apikey", supabaseKey)
                 .exchangeToMono(response -> {
@@ -102,7 +103,7 @@ public class SupabaseStorageService {
 
     private String encodePath(String path) {
         return Arrays.stream(path.split("/"))
-                .map(seg -> URLEncoder.encode(seg, StandardCharsets.UTF_8))
+                .map(seg -> URLEncoder.encode(seg, StandardCharsets.UTF_8).replace("+", "%20"))
                 .collect(Collectors.joining("/"));
     }
 

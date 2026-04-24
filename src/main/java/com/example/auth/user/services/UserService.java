@@ -28,7 +28,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User findById(Integer id){
+    public User findById(Long id){
        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "User not found"));
@@ -52,7 +52,7 @@ public class UserService {
     }
 
     @Transactional
-    public User updateUser(Integer userId, UpdateDTO dto){
+    public User updateUser(Long userId, UpdateDTO dto){
         User user = this.findById(userId);
 
         user.setName(dto.name());
@@ -63,7 +63,7 @@ public class UserService {
     }
 
     @Transactional
-    public void updatePassword(Integer id, String oldPassword, String newPassword){
+    public void updatePassword(Long id, String oldPassword, String newPassword){
         User user = this.findById(id);
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
@@ -86,7 +86,7 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteAccount(Integer id, String password) {
+    public void deleteAccount(Long id, String password) {
         User user = this.findById(id);
 
         if (!passwordEncoder.matches(password, user.getPassword())) {

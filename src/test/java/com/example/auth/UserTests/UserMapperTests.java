@@ -60,7 +60,7 @@ class UserMapperTests {
     @DisplayName("toDTOList should map list of users")
     void toDTOList_shouldMapUserList() {
         User first = user();
-        User second = new User(2, "Other", "other@test.com", "11888888888", "secret", UserRole.USER);
+        User second = new User(2L, "Other", "other@test.com", "11888888888", "secret", UserRole.USER);
 
         List<UserResponseDTO> result = userMapper.toDTOList(List.of(first, second));
 
@@ -72,7 +72,7 @@ class UserMapperTests {
     }
 
     private User user() {
-        return new User(1, "User", "user@test.com", "11999999999", "secret", UserRole.USER);
+        return new User(1L, "User", "user@test.com", "11999999999", "secret", UserRole.USER);
     }
 
     private Pet pet(User owner, Long id, String nickname) {

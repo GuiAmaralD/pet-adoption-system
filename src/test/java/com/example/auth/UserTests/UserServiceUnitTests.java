@@ -1,6 +1,7 @@
 package com.example.auth.UserTests;
 
 import com.example.auth.user.DTOs.UpdateDTO;
+import com.example.auth.pet.SupabaseStorageService;
 import com.example.auth.user.User;
 import com.example.auth.user.UserRepository;
 import com.example.auth.user.UserRole;
@@ -31,6 +32,8 @@ class UserServiceUnitTests {
     private UserRepository userRepository;
     @Mock
     private BCryptPasswordEncoder passwordEncoder;
+    @Mock
+    private SupabaseStorageService supabaseStorageService;
     @InjectMocks
     private UserService userService;
 
@@ -38,23 +41,23 @@ class UserServiceUnitTests {
     @DisplayName("findById should return user when id exists")
     void findById_shouldReturnUser_whenIdExists() {
         User user = user();
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        User result = userService.findById(1);
+        User result = userService.findById(1L);
 
         assertNotNull(result);
-        assertEquals(1, result.getId());
+        assertEquals(1L, result.getId());
         assertEquals("user@test.com", result.getEmail());
     }
 
     @Test
     @DisplayName("findById should throw NOT_FOUND when id does not exist")
     void findById_shouldThrowNotFound_whenIdDoesNotExist() {
-        when(userRepository.findById(999)).thenReturn(Optional.empty());
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> userService.findById(999)
+                () -> userService.findById(999L)
         );
 
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
@@ -113,10 +116,10 @@ class UserServiceUnitTests {
     void updateUser_shouldUpdateFieldsAndSave() {
         User user = user();
         UpdateDTO dto = new UpdateDTO("Updated Name", "11988887777", "updated@test.com");
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        User updated = userService.updateUser(1, dto);
+        User updated = userService.updateUser(1L, dto);
 
         assertAll(
                 () -> assertEquals("Updated Name", updated.getName()),
@@ -130,12 +133,12 @@ class UserServiceUnitTests {
     @DisplayName("updatePassword should throw CONFLICT when old password is incorrect")
     void updatePassword_shouldThrowConflict_whenOldPasswordIsIncorrect() {
         User user = user();
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrong", user.getPassword())).thenReturn(false);
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> userService.updatePassword(1, "wrong", "newPassword")
+                () -> userService.updatePassword(1L, "wrong", "newPassword")
         );
 
         assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
@@ -146,12 +149,12 @@ class UserServiceUnitTests {
     @DisplayName("updatePassword should throw CONFLICT when old and new passwords are equal")
     void updatePassword_shouldThrowConflict_whenOldAndNewPasswordsAreEqual() {
         User user = user();
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("samePassword", user.getPassword())).thenReturn(true);
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> userService.updatePassword(1, "samePassword", "samePassword")
+                () -> userService.updatePassword(1L, "samePassword", "samePassword")
         );
 
         assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
@@ -162,11 +165,11 @@ class UserServiceUnitTests {
     @DisplayName("updatePassword should encode and save new password")
     void updatePassword_shouldEncodeAndSaveNewPassword() {
         User user = user();
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("oldPassword", user.getPassword())).thenReturn(true);
         when(passwordEncoder.encode("newPassword")).thenReturn("encoded-new-password");
 
-        userService.updatePassword(1, "oldPassword", "newPassword");
+        userService.updatePassword(1L, "oldPassword", "newPassword");
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(captor.capture());
@@ -177,10 +180,10 @@ class UserServiceUnitTests {
     @DisplayName("deleteAccount should delete user when password is correct")
     void deleteAccount_shouldDeleteUser_whenPasswordIsCorrect() {
         User user = user();
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("correct", user.getPassword())).thenReturn(true);
 
-        userService.deleteAccount(1, "correct");
+        userService.deleteAccount(1L, "correct");
 
         verify(userRepository).delete(user);
     }
@@ -189,12 +192,12 @@ class UserServiceUnitTests {
     @DisplayName("deleteAccount should throw CONFLICT when password is incorrect")
     void deleteAccount_shouldThrowConflict_whenPasswordIsIncorrect() {
         User user = user();
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrong", user.getPassword())).thenReturn(false);
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> userService.deleteAccount(1, "wrong")
+                () -> userService.deleteAccount(1L, "wrong")
         );
 
         assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
@@ -204,11 +207,11 @@ class UserServiceUnitTests {
     @Test
     @DisplayName("deleteAccount should throw NOT_FOUND when user does not exist")
     void deleteAccount_shouldThrowNotFound_whenUserDoesNotExist() {
-        when(userRepository.findById(999)).thenReturn(Optional.empty());
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> userService.deleteAccount(999, "any")
+                () -> userService.deleteAccount(999L, "any")
         );
 
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
@@ -216,6 +219,6 @@ class UserServiceUnitTests {
     }
 
     private User user() {
-        return new User(1, "User", "user@test.com", "11999999999", "encoded-old", UserRole.USER);
+        return new User(1L, "User", "user@test.com", "11999999999", "encoded-old", UserRole.USER);
     }
 }

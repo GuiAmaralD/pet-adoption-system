@@ -522,6 +522,6 @@ class PetControllerTests {
     }
 
     private User user() {
-        return new User(1, "User", "user@test.com", "11999999999", "secret", UserRole.USER);
+        return new User(1L, "User", "user@test.com", "11999999999", "secret", UserRole.USER);
     }
 }

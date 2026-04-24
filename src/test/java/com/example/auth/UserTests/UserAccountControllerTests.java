@@ -85,10 +85,10 @@ class UserAccountControllerTests {
     @WithMockUser(username = "user@test.com")
     void updateUser_shouldUpdateLoggedUser() throws Exception {
         User loggedUser = user();
-        User updated = new User(1, "Updated User", "updated@test.com", "11988887777", "secret", UserRole.USER);
+        User updated = new User(1L, "Updated User", "updated@test.com", "11988887777", "secret", UserRole.USER);
 
         when(userService.findByEmail("user@test.com")).thenReturn(loggedUser);
-        when(userService.updateUser(eq(1), any())).thenReturn(updated);
+        when(userService.updateUser(eq(1L), any())).thenReturn(updated);
         when(userMapper.toDTO(updated)).thenCallRealMethod();
 
         mockMvc.perform(put("/account")
@@ -141,7 +141,7 @@ class UserAccountControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value("Password updated."));
 
-        verify(userService).updatePassword(1, "oldPassword", "newPassword");
+        verify(userService).updatePassword(1L, "oldPassword", "newPassword");
     }
 
     @Test
@@ -186,7 +186,7 @@ class UserAccountControllerTests {
                                 """))
                 .andExpect(status().isNoContent());
 
-        verify(userService).deleteAccount(1, "secret");
+        verify(userService).deleteAccount(1L, "secret");
     }
 
     @Test
@@ -196,7 +196,7 @@ class UserAccountControllerTests {
         User user = user();
         when(userService.findByEmail("user@test.com")).thenReturn(user);
         doThrow(new ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "wrong password"))
-                .when(userService).deleteAccount(1, "wrong");
+                .when(userService).deleteAccount(1L, "wrong");
 
         mockMvc.perform(delete("/account")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -221,6 +221,6 @@ class UserAccountControllerTests {
     }
 
     private User user() {
-        return new User(1, "User", "user@test.com", "11999999999", "secret", UserRole.USER);
+        return new User(1L, "User", "user@test.com", "11999999999", "secret", UserRole.USER);
     }
 }

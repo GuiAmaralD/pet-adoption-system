@@ -11,3 +11,7 @@ spring:
 supabase:
   url: http://localhost:54321
   key: test-key
+api:
+  security:
+    token:
+      secret: test-jwt-secret

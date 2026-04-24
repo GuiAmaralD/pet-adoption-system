@@ -78,7 +78,7 @@ public class UserAccountController {
     public ResponseEntity<String> updatePassword(@RequestBody @Valid ChangePasswordDTO dto, Principal principal){
 
         User user = (User) userService.findByEmail(principal.getName());
-        Integer id = user.getId();
+        Long id = user.getId();
 
         userService.updatePassword(id, dto.oldPassword(), dto.newPassword());
 
@@ -95,7 +95,7 @@ public class UserAccountController {
     })
     public ResponseEntity<Void> deleteAccount(@RequestBody @Valid DeleteAccountDTO dto, Principal principal) {
         User user = (User) userService.findByEmail(principal.getName());
-        Integer id = user.getId();
+        Long id = user.getId();
 
         userService.deleteAccount(id, dto.password());
 

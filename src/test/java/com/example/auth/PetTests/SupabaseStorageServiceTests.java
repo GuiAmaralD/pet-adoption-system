@@ -13,6 +13,8 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -110,8 +112,10 @@ class SupabaseStorageServiceTests {
 
         service.deleteByPublicUrl("pet-images", "https://supabase.test/storage/v1/object/public/pet-images/folder name/file 1.jpg");
 
-        String url = captured.get().url().toString();
-        assertTrue(url.contains("folder%20name/file%201.jpg"));
+        String rawUrl = captured.get().url().toString();
+        String decodedUrl = URLDecoder.decode(rawUrl, StandardCharsets.UTF_8);
+        assertTrue(decodedUrl.contains("folder name/file 1.jpg"),
+                () -> "rawUrl=" + rawUrl + " decodedUrl=" + decodedUrl);
     }
 
     @Test

@@ -52,7 +52,7 @@ class UserAuthenticationControllerTests {
     @Test
     @DisplayName("POST /auth/login should return token when credentials are valid")
     void login_shouldReturnToken_whenCredentialsAreValid() throws Exception {
-        User user = new User(1, "User", "user@test.com", "11999999999", "secret", UserRole.USER);
+        User user = new User(1L, "User", "user@test.com", "11999999999", "secret", UserRole.USER);
         Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))

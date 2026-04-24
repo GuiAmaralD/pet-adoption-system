@@ -46,7 +46,7 @@ class UserControllerTests {
     @DisplayName("GET /user/{id} should return user info")
     void getUserById_shouldReturnUserInfo() throws Exception {
         User user = user();
-        when(userService.findById(1)).thenReturn(user);
+        when(userService.findById(1L)).thenReturn(user);
         when(userMapper.toDTO(user)).thenCallRealMethod();
 
         mockMvc.perform(get("/user/1"))
@@ -60,7 +60,7 @@ class UserControllerTests {
     @Test
     @DisplayName("GET /user/{id} should return NOT_FOUND when user does not exist")
     void getUserById_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {
-        when(userService.findById(999))
+        when(userService.findById(999L))
                 .thenThrow(new ResponseStatusException(NOT_FOUND, "User not found"));
 
         mockMvc.perform(get("/user/999"))
@@ -71,7 +71,7 @@ class UserControllerTests {
     @DisplayName("GET /user/{id} should be publicly accessible")
     void getUserById_shouldBePublic() throws Exception {
         User user = user();
-        when(userService.findById(1)).thenReturn(user);
+        when(userService.findById(1L)).thenReturn(user);
         when(userMapper.toDTO(user)).thenCallRealMethod();
 
         mockMvc.perform(get("/user/1"))
@@ -79,6 +79,6 @@ class UserControllerTests {
     }
 
     private User user() {
-        return new User(1, "User", "user@test.com", "11999999999", "secret", UserRole.USER);
+        return new User(1L, "User", "user@test.com", "11999999999", "secret", UserRole.USER);
     }
 }

@@ -18,7 +18,7 @@ class TokenServiceTests {
         TokenService tokenService = new TokenService();
         ReflectionTestUtils.setField(tokenService, "secret", "test-secret");
 
-        User user = new User(1, "User", "user@test.com", "11999999999", "secret", UserRole.USER);
+        User user = new User(1L, "User", "user@test.com", "11999999999", "secret", UserRole.USER);
 
         String token = tokenService.generateToken(user);
 

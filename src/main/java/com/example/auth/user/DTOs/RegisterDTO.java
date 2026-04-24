@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 public record RegisterDTO(
 
         @NotBlank(message = "name should not be blank")
-        @Pattern(regexp = "^[A-Za-zÃ¡Ã Ã¢Ã£Ã©Ã¨ÃªÃ­Ã¯Ã³Ã´ÃµÃ¶ÃºÃ§Ã±ÃÃ€Ã‚ÃƒÃ‰ÃˆÃÃÃ“Ã”Ã•Ã–ÃšÃ‡Ã‘ ]+$", message = "name should contain only letters")
+        @Pattern(regexp = "^[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ ]+$", message = "name should contain only letters")
         @Size(max = 55, message = "invalid name length (max = 55)")
         @Schema(example = "Maria Silva")
         String name,
